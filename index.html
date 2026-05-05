@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>猫猫糕统计</title>
+    <link rel="icon" type="image/x-icon" href="ico/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="ico/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="ico/favicon-16x16.png">
+    <style>
+        :root {
+            --bg: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-sub: #888888;
+            --accent: #333333;
+            --accent-dark: #000000;
+            --tag-bg: #f9f9f9;
+            --tag-selected-bg: #eeeeee;
+            --tag-selected-border: #999999;
+            --tag-selected-text: #000000;
+            --border: #e8e8e8;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px 16px 80px;
+            line-height: 1.5;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input,
+        textarea {
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
+        .main-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .banner-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 600;
+            color: #444;
+            white-space: nowrap;
+        }
+
+        .banner-label {
+            color: #777;
+        }
+
+
+        .meta-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 600;
+            color: #444;
+            align-self: flex-end;
+            margin-bottom: -8px;
+        }
+
+
+        .toolbar-layout {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .panel-switcher {
+            display: inline-flex;
+            background: #fff;
+            border: 1px solid #fff;
+            border-radius: 999px;
+            padding: 3px;
+            gap: 2px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            width: fit-content;
+            flex-shrink: 0;
+        }
+
+        .switch-btn {
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 7px 15px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background-color 0.22s ease, color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+            white-space: nowrap;
+        }
+
+            .switch-btn.active {
+                background: #111;
+                color: #fff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+                animation: switchPulse 0.2s ease;
+            }
+
+            .switch-btn:not(.active):hover {
+                transform: translateY(-1px);
+                background: rgba(0, 0, 0, 0.05);
+            }
+
+        .aji-compact {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 0 1 auto;
+            min-width: 0;
+            margin-left: auto;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .aji-compact-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+            white-space: nowrap;
+            flex-shrink: 0;
+            letter-spacing: 0.3px;
+        }
+
+        .aji-compact-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .aji-compact-server-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .aji-compact-server-tag {
+            font-size: 11px;
+            font-weight: 700;
+            color: #666;
+            background: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 999px;
+            letter-spacing: 0.3px;
+        }
+
+        .aji-compact-content {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+        }
+
+            .aji-compact-content .aji-info {
+                font-weight: 700;
+                color: var(--accent-dark);
+                font-size: 13px;
+                background: #eeeeee;
+                padding: 3px 9px;
+                border-radius: 6px;
+                cursor: pointer;
+                letter-spacing: 0.3px;
+                white-space: nowrap;
+            }
+
+            .aji-compact-content .aji-input {
+                max-width: 85px;
+                padding: 5px 8px;
+                font-size: 12px;
+                border: 1.5px solid var(--border);
+                border-radius: 6px;
+                background: #fafafa;
+                outline: none;
+                color: var(--text-main);
+                transition: all 0.2s;
+            }
+
+                .aji-compact-content .aji-input:focus {
+                    border-color: var(--accent);
+                    background: #fff;
+                    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.04);
+                }
+
+            .aji-compact-content .aji-btn {
+                padding: 5px 11px;
+                border-radius: 14px;
+                font-size: 11px;
+                font-weight: 700;
+                cursor: pointer;
+                border: 1.5px solid var(--accent);
+                background: #fff;
+                color: var(--accent-dark);
+                white-space: nowrap;
+                transition: all 0.2s;
+            }
+
+                .aji-compact-content .aji-btn:hover {
+                    background: #f5f5f5;
+                }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 420px 1fr;
+                align-items: start;
+            }
+
+            .left-column {
+                position: sticky;
+                top: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        .content-grid.single-panel {
+            grid-template-columns: 1fr !important;
+        }
+
+        .footer-meta {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            line-height: 1.6;
+        }
+
+            .footer-meta a {
+                color: #888;
+                text-decoration: none;
+            }
+
+                .footer-meta a:hover {
+                    text-decoration: underline;
+                }
+
+            .footer-meta .feedback-link {
+                text-decoration: underline;
+            }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .title-subtext {
+            font-size: 11px;
+            font-weight: normal;
+            color: var(--text-sub);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 760px) {
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #333333;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: #fafafa;
+            transition: all 0.2s;
+            outline: none;
+            color: var(--text-main);
+        }
+
+            .form-input:focus {
+                border-color: var(--accent);
+                background: #fff;
+                box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+            }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            width: 100%;
+        }
+
+            .btn-primary:hover {
+                background: var(--accent-dark);
+                transform: translateY(-1px);
+            }
+
+            .btn-primary:active {
+                transform: translateY(0);
+            }
+
+            .btn-primary:disabled {
+                background: #cccccc;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+        .btn-outline {
+            background: #fff;
+            border: 1.5px solid var(--accent);
+            color: var(--accent-dark);
+        }
+
+            .btn-outline:hover {
+                background: #f5f5f5;
+            }
+
+        .tag-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 10px;
+            margin: 10px 0 15px;
+        }
+
+        .tag-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--tag-bg);
+            border: 1.5px solid transparent;
+            transition: all 0.2s;
+        }
+
+            .tag-item img {
+                width: 36px;
+                height: 36px;
+                margin-right: 8px;
+                border-radius: 6px;
+                object-fit: cover;
+                background: #eee;
+            }
+
+            .tag-item:hover {
+                transform: scale(1.02);
+                background: #f0f0f0;
+            }
+
+            .tag-item.selected {
+                background: var(--tag-selected-bg);
+                border-color: var(--tag-selected-border);
+                color: var(--tag-selected-text);
+            }
+
+        .results-area {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+            .results-area > :not(.result-card) {
+                grid-column: 1 / -1;
+            }
+
+        .result-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .result-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .result-uid {
+            font-weight: 800;
+            font-size: 17px;
+            color: var(--text-main);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .result-cats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .result-cat-tag {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            background: #f0f0f0;
+            color: #666;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+            .result-cat-tag.highlight {
+                background: var(--tag-selected-bg);
+                color: var(--tag-selected-text);
+                box-shadow: inset 0 0 0 1px var(--tag-selected-border);
+            }
+
+        .server-tag {
+            font-size: 12px;
+            color: var(--text-sub);
+            font-weight: normal;
+            margin-left: 6px;
+        }
+
+        .location-section {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+        }
+
+            .location-section .form-label {
+                cursor: pointer;
+                user-select: none;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: color 0.2s;
+            }
+
+                .location-section .form-label:hover {
+                    color: #000;
+                }
+
+                .location-section .form-label .collapse-arrow {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 20px;
+                    height: 20px;
+                    flex-shrink: 0;
+                    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+                    font-size: 10px;
+                    color: #888;
+                    line-height: 1;
+                }
+
+            .location-section.collapsed .form-label .collapse-arrow {
+                transform: rotate(-90deg);
+            }
+
+            .location-section .form-label .collapse-hint {
+                font-size: 11px;
+                font-weight: 400;
+                color: #aaa;
+                margin-left: auto;
+            }
+
+        #locationGroups {
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.3s ease, margin-top 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+            max-height: 600px;
+            opacity: 1;
+            margin-top: 8px;
+        }
+
+        .location-section.collapsed #locationGroups {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        .location-group {
+            margin-bottom: 10px;
+        }
+
+        .location-group-label {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+        .location-chip-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .location-chip {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #fafafa;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+            .location-chip.selected {
+                background: var(--tag-selected-bg);
+                box-shadow: inset 0 0 0 1px var(--tag-selected-border);
+                color: var(--tag-selected-text);
+            }
+
+            .location-chip.disabled {
+                opacity: .5;
+                cursor: not-allowed;
+            }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 6px 0 16px;
+            user-select: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+            .toggle-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+                position: absolute;
+                pointer-events: none;
+            }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #d1d1d6;
+            border-radius: 24px;
+            transition: background-color 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+            .toggle-slider::before {
+                content: "";
+                position: absolute;
+                height: 20px;
+                width: 20px;
+                left: 2px;
+                bottom: 2px;
+                background-color: #fff;
+                border-radius: 50%;
+                transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+            }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #333333;
+        }
+
+            .toggle-switch input:checked + .toggle-slider::before {
+                transform: translateX(20px);
+            }
+
+        .toggle-switch input:focus-visible + .toggle-slider {
+            outline: 2px solid #999;
+            outline-offset: 2px;
+        }
+
+        .toggle-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            z-index: 1000;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            animation: toastIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+
+            .toast.success {
+                background: #333333;
+                color: #fff;
+            }
+
+            .toast.error {
+                background: #ff4d4f;
+                color: #fff;
+            }
+
+            .toast.info {
+                background: #666666;
+                color: #fff;
+            }
+
+        @keyframes switchPulse {
+            from {
+                transform: scale(0.98);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                bottom: 0;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .switch-btn {
+                transition: none;
+            }
+
+            .switch-btn.active,
+            .switch-btn:not(.active):hover {
+                transform: none;
+                box-shadow: none;
+                animation: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .meta-status {
+                font-size: 11px;
+                gap: 6px;
+                padding: 5px 8px;
+                margin-bottom: -2px;
+            }
+
+            .toolbar-layout {
+                gap: 8px;
+            }
+
+            .aji-compact {
+                gap: 6px;
+                width: 100%;
+                margin-left: 0;
+                padding: 8px 10px;
+            }
+
+            .aji-compact-row {
+                gap: 5px;
+            }
+
+            .aji-compact-content .aji-input {
+                max-width: 72px;
+                padding: 4px 6px;
+                font-size: 11px;
+            }
+
+            .aji-compact-content .aji-btn {
+                padding: 4px 9px;
+                font-size: 10px;
+            }
+
+            .aji-compact-content .aji-info {
+                font-size: 11px;
+                padding: 2px 7px;
+            }
+
+            .aji-compact-server-tag {
+                font-size: 10px;
+                padding: 2px 6px;
+            }
+
+            .aji-compact-label {
+                font-size: 11px;
+            }
+
+            .switch-btn {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
+            .results-area {
+                grid-template-columns: 1fr;
+            }
+
+            .toggle-row {
+                margin: 4px 0 12px;
+                gap: 8px;
+            }
+
+            .toggle-label {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tag-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .result-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .toolbar-layout {
+                gap: 6px;
+            }
+
+            .aji-compact-row {
+                gap: 4px;
+            }
+
+            .aji-compact-content .aji-input {
+                max-width: 64px;
+            }
+        }
+
+        .admin-gear-btn {
+            position: fixed;
+            right: 12px;
+            bottom: 12px;
+            border: none;
+            background: transparent;
+            color: #000;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .admin-gear-btn svg {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        .admin-modal-mask {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+        }
+
+
+        .search-filter-row {
+            position: relative;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 4px;
+        }
+
+        .filter-funnel-btn {
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            color: #555;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .filter-funnel-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .filter-menu {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 10px;
+            min-width: 220px;
+            display: none;
+            z-index: 15;
+        }
+
+        .filter-menu.open {
+            display: grid;
+            gap: 8px;
+        }
+
+        .filter-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #444;
+            cursor: pointer;
+        }
+
+        .filter-menu-item input:disabled + span {
+            color: #aaa;
+        }
+
+        .admin-modal-mask.open { display: flex; }
+        .admin-modal { background: #fff; padding: 16px; border-radius: 12px; width: min(92vw, 360px); }
+        .admin-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 700; }
+        .admin-close-btn { border: none; background: transparent; cursor: pointer; font-size: 20px; line-height: 1; }
+        .admin-modal .form-group { margin-bottom: 10px; }
+        .admin-actions { display: grid; gap: 8px; margin-top: 6px; }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="meta-status">
+            <span>下次刷新：<span id="nextRefreshText">加载中...</span></span>
+            <span>|</span>
+            <span>本周收录:<span id="weeklyCountText">加载中...</span></span>
+        </div>
+
+        <div class="toolbar-layout">
+            <div class="panel-switcher" role="tablist" aria-label="功能切换">
+                <button class="switch-btn active" id="searchTabBtn" role="tab" aria-selected="true">搜索</button>
+                <button class="switch-btn" id="uploadTabBtn" role="tab" aria-selected="false">上传</button>
+            </div>
+            <div class="aji-compact" id="ajiCompact">
+                <span class="aji-compact-label">阿基喵利</span>
+                <div class="aji-compact-row">
+                    <div class="aji-compact-server-group">
+                        <span class="aji-compact-server-tag">官服</span>
+                        <div class="aji-compact-content" id="ajiContent-官服">...</div>
+                    </div>
+                    <div class="aji-compact-server-group">
+                        <span class="aji-compact-server-tag">B服</span>
+                        <div class="aji-compact-content" id="ajiContent-B服">...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="left-column" id="searchColumn">
+                <section class="card panel-card" id="searchPanel">
+                    <div class="card-title">搜索</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">服务器</label>
+                            <select id="searchServerSelect" class="form-input">
+                                <option value="官服">官服</option>
+                                <option value="B服">B服</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">猫猫糕</label>
+                            <select id="searchCatSelect" class="form-input">
+                                <option value="">-- 请选择 --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="search-filter-row">
+                        <button type="button" class="filter-funnel-btn" id="filterFunnelBtn" aria-label="筛选地点信息" title="筛选地点信息">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M3 5h18l-7 8v5l-4 2v-7L3 5z"></path>
+                            </svg>
+                        </button>
+                        <div class="filter-menu" id="filterMenu" aria-hidden="true">
+                            <label class="filter-menu-item" for="showLocationToggle">
+                                <input type="checkbox" id="showLocationToggle">
+                                <span>显示地点信息</span>
+                            </label>
+                            <label class="filter-menu-item" for="hideNoLocationToggle">
+                                <input type="checkbox" id="hideNoLocationToggle" disabled>
+                                <span>过滤无地点信息数据</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="searchBtn">搜索拥有者</button>
+                    <div class="results-area" id="resultsArea">
+                        <div style="text-align:center; color:var(--text-sub); padding:20px; font-size:13px;">请选择条件后点击搜索</div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="right-column" id="uploadColumn">
+                <section class="card panel-card" id="uploadPanel">
+                    <div class="card-title">上传</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">所属服务器</label>
+                            <select id="uploadServerSelect" class="form-input">
+                                <option value="官服">官服</option>
+                                <option value="B服">B服</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">游戏UID</label>
+                            <input type="text" id="uidInput" class="form-input" placeholder="请输入9位数字UID" maxlength="9">
+                            <div id="uidHint" class="title-subtext" style="margin-top:5px;"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">选择猫猫糕 (必须选满3个)</label>
+                        <div class="tag-grid" id="tagGrid"></div>
+                        <div style="font-size:13px; font-weight:700; color:var(--accent-dark);">
+                            已选中: <span id="selectedCount">0</span> / 3
+                        </div>
+                    </div>
+                    <div class="form-group location-section collapsed" id="locationSection">
+                        <label class="form-label" id="locationToggleLabel">
+                            <span class="collapse-arrow">▼</span>
+                            地点信息（可选）
+                            <span class="collapse-hint" id="collapseHint">点击展开</span>
+                        </label>
+                        <div id="locationGroups"></div>
+                    </div>
+                    <button class="btn btn-primary" id="submitBtn" disabled>请完善信息</button>
+                </section>
+            </div>
+        </div>
+        <footer class="footer-meta">
+            <div>仓库:<a href="https://github.com/aa1x/cat" target="_blank" rel="noopener noreferrer" class="feedback-link">AA1X/cat</a>&nbsp&nbsp许可证:<a href="https://opensource.org/license/MIT" target="_blank" rel="noopener noreferrer" class="feedback-link">MIT</a></div>
+            <div>米游社:<a href="https://www.miyoushe.com/sr/accountCenter/postList?id=307745071" target="_blank" rel="noopener noreferrer" class="feedback-link">量产型猫娘</a></div>
+            <div>反馈:<a href="mailto:AiX_89655@outlook.com" class="feedback-link">邮箱</a></div>
+        </footer>
+    </div>
+    <div id="toastContainer"></div>
+    <button id="adminGearBtn" class="admin-gear-btn" type="button" aria-label="快捷删除">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.43 12.98a7.93 7.93 0 0 0 .05-.98 7.93 7.93 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.57 7.57 0 0 0-1.69-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65a7.57 7.57 0 0 0-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.57 11a7.93 7.93 0 0 0-.05.98c0 .33.02.66.05.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.52.4 1.09.73 1.69.98l.38 2.65a.5.5 0 0 0 .5.42h4a.5.5 0 0 0 .5-.42l.38-2.65c.6-.25 1.17-.58 1.69-.98l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5z"/></svg>
+    </button>
+    <div id="adminModalMask" class="admin-modal-mask" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
+        <div class="admin-modal">
+            <div class="admin-modal-header">
+                <span id="adminModalTitle">快捷删除</span>
+                <button id="adminCloseBtn" class="admin-close-btn" type="button" aria-label="关闭">×</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="adminPasswordInput">密码</label>
+                <input id="adminPasswordInput" type="password" class="form-input" autocomplete="current-password">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="adminUidInput">UID（9位数字）</label>
+                <input id="adminUidInput" type="text" class="form-input" maxlength="9" placeholder="仅删除指定 UID 时填写">
+            </div>
+            <div class="admin-actions">
+                <button id="adminDeleteUidBtn" class="btn btn-primary" type="button">删除指定 UID 的记录</button>
+                <button id="adminDeleteLastWeekBtn" class="btn btn-primary" type="button">删除上周数据</button>
+                <button id="adminDeleteAjiBtn" class="btn btn-primary" type="button">删除阿基喵利数据</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // 所有 API 请求统一前缀（Cloudflare Pages 部署后就是当前域名）
+            const API_BASE = '/api';
+
+            const CAT_NAMES = ['垃圾糕', '冰糕', '星辰拿铁', '蜂蜜骰子', '芝麻酥', '游戏糕手', '红豆牛奶', '雪顶椰椰', '花见团子',
+                '盹盹咪', '藤萝饼', '谐乐小猫', '蝶豆花慕斯', '白桃布丁', '薄荷提拉咪', '重力酥', '拉姆之友', '萤绒绒', '纯白的孩子',
+                '捣乱专家', '太卜糍', '幸运点心', '墨镜猫咪', '天使圣代', '蓝莓罐子', '白玉青团', '糯米团'
+            ];
+            const LOCATION_OPTIONS = ['猫爬架旁桌上台灯', '吧台上固定电话', '车厢上中部沙发', '留声机旁盆栽', '二楼楼梯旁花坛', '车厢下中部沙发',
+                '帕姆衣架旁椅子'
+            ];
+            const LS_KEY_SHOW_LOCATION = 'catCakeShowLocation';
+            const LS_KEY_HIDE_NO_LOCATION = 'catCakeHideNoLocation';
+            const TIMEZONE = 'Asia/Shanghai';
+
+            const dom = {
+                tagGrid: document.getElementById('tagGrid'),
+                selCount: document.getElementById('selectedCount'),
+                uidInp: document.getElementById('uidInput'),
+                uidHint: document.getElementById('uidHint'),
+                submitBtn: document.getElementById('submitBtn'),
+                upServer: document.getElementById('uploadServerSelect'),
+                shServer: document.getElementById('searchServerSelect'),
+                shCat: document.getElementById('searchCatSelect'),
+                shBtn: document.getElementById('searchBtn'),
+                results: document.getElementById('resultsArea'),
+                nextRefresh: document.getElementById('nextRefreshText'),
+                weeklyCount: document.getElementById('weeklyCountText'),
+                searchPanel: document.getElementById('searchPanel'),
+                uploadPanel: document.getElementById('uploadPanel'),
+                searchTabBtn: document.getElementById('searchTabBtn'),
+                uploadTabBtn: document.getElementById('uploadTabBtn'),
+                panelSwitcher: document.querySelector('.panel-switcher'),
+                contentGrid: document.querySelector('.content-grid'),
+                searchColumn: document.getElementById('searchColumn'),
+                uploadColumn: document.getElementById('uploadColumn'),
+                locationGroups: document.getElementById('locationGroups'),
+                locationSection: document.getElementById('locationSection'),
+                locationToggleLabel: document.getElementById('locationToggleLabel'),
+                collapseHint: document.getElementById('collapseHint'),
+                showLocationToggle: document.getElementById('showLocationToggle'),
+                hideNoLocationToggle: document.getElementById('hideNoLocationToggle'),
+                filterFunnelBtn: document.getElementById('filterFunnelBtn'),
+                filterMenu: document.getElementById('filterMenu'),
+                adminGearBtn: document.getElementById('adminGearBtn'),
+                adminModalMask: document.getElementById('adminModalMask'),
+                adminCloseBtn: document.getElementById('adminCloseBtn'),
+                adminPasswordInput: document.getElementById('adminPasswordInput'),
+                adminUidInput: document.getElementById('adminUidInput'),
+                adminDeleteUidBtn: document.getElementById('adminDeleteUidBtn'),
+                adminDeleteLastWeekBtn: document.getElementById('adminDeleteLastWeekBtn'),
+                adminDeleteAjiBtn: document.getElementById('adminDeleteAjiBtn')
+            };
+
+            let selectedSet = new Set();
+            let selectedOrder = [];
+            let selectedLocations = [null, null, null];
+
+            function getSelectedCatsOrdered() {
+                return [...selectedOrder];
+            }
+
+            function showToast(msg, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                if (type === 'error') {
+                    container.querySelectorAll('.toast.error').forEach(node => node.remove());
+                }
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = msg;
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+
+            window.copyText = function (text) {
+                if (!text) return;
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('复制成功', 'success');
+                }).catch(() => {
+                    const input = document.createElement('input');
+                    input.value = text;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    input.remove();
+                    showToast('复制成功', 'success');
+                });
+            };
+
+
+            function getShanghaiWeekStart(now = new Date()) {
+                const shanghaiOffsetMs = 8 * 60 * 60 * 1000;
+                const weekMs = 7 * 24 * 60 * 60 * 1000;
+                const shNowMs = now.getTime() + shanghaiOffsetMs;
+                const shNow = new Date(shNowMs);
+                const day = shNow.getUTCDay();
+                const diffToMonday = day === 0 ? 6 : day - 1;
+
+                let weekStartShMs = Date.UTC(
+                    shNow.getUTCFullYear(),
+                    shNow.getUTCMonth(),
+                    shNow.getUTCDate() - diffToMonday,
+                    4,
+                    0,
+                    0,
+                    0
+                );
+
+                if (shNowMs < weekStartShMs) {
+                    weekStartShMs -= weekMs;
+                }
+
+                return new Date(weekStartShMs - shanghaiOffsetMs);
+            }
+
+            function formatShanghaiMonthDay(date) {
+                const formatter = new Intl.DateTimeFormat('zh-CN', {
+                    timeZone: TIMEZONE,
+                    month: 'numeric',
+                    day: 'numeric'
+                });
+                const parts = Object.fromEntries(formatter.formatToParts(date).map(p => [p.type, p.value]));
+                return `${Number(parts.month)}/${Number(parts.day)}`;
+            }
+
+            function updateMetaStatus() {
+                const weekStart = getShanghaiWeekStart();
+                const nextRefresh = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+                dom.nextRefresh.textContent = formatShanghaiMonthDay(nextRefresh);
+            }
+
+            async function apiGet(path) {
+                const res = await fetch(API_BASE + path);
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw { message: err.message || '请求失败', code: err.code, status: res.status };
+                }
+                return res.json();
+            }
+
+            async function apiPost(path, body) {
+                const res = await fetch(API_BASE + path, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw { message: err.message || '请求失败', code: err.code, status: res.status };
+                }
+                return res.json();
+            }
+
+            function openAdminModal() { dom.adminModalMask.classList.add('open'); }
+            function closeAdminModal() { dom.adminModalMask.classList.remove('open'); }
+            async function adminDelete(action) {
+                const password = dom.adminPasswordInput.value;
+                const uid = dom.adminUidInput.value.trim();
+                if (!password) return showToast('请输入密码', 'error');
+                if (action === 'delete_uid' && !/^\d{9}$/.test(uid)) return showToast('UID 必须是 9 位数字', 'error');
+                const payload = { action, password, ...(action === 'delete_uid' ? { uid } : {}) };
+                try {
+                    const data = await apiPost('/admin-delete', payload);
+                    showToast(`删除成功，影响行数: ${data.deleted ?? '未知'}`, 'success');
+                } catch (err) {
+                    showToast(`删除失败: ${err.message}`, 'error');
+                }
+            }
+
+
+            async function fetchWeeklyCount() {
+                try {
+                    const data = await apiGet('/weekly-count');
+                    dom.weeklyCount.textContent = String(data.count);
+                } catch (err) {
+                    console.error(err);
+                    dom.weeklyCount.textContent = '加载失败';
+                }
+            }
+
+
+            async function refreshAji() {
+                for (const server of ['官服', 'B服']) {
+                    const container = document.getElementById(`ajiContent-${server}`);
+                    if (!container) continue;
+                    try {
+                        const data = await apiGet(`/daily-aji?server=${encodeURIComponent(server)}`);
+                        if (data.uid) {
+                            container.innerHTML = `<span class="aji-info" onclick="copyText('${data.uid}')">${data.uid}</span>`;
+                        } else {
+                            container.innerHTML = `<input type="text" class="form-input aji-input" placeholder="输入UID"><button class="btn btn-outline aji-btn" onclick="window.upAjiGlobal('${server}', this)">上传</button>`;
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        container.innerHTML = '<span style="color:red;font-size:11px;">加载失败</span>';
+                    }
+                }
+            }
+
+
+            window.upAjiGlobal = async function (server, btn) {
+                const input = btn.previousElementSibling;
+                const uid = input.value.trim();
+                if (!/^\d{9}$/.test(uid)) {
+                    showToast('UID必须为9位数字', 'error');
+                    return;
+                }
+                btn.disabled = true;
+                try {
+                    await apiPost('/daily-aji', { uid, server });
+                    showToast('上传成功', 'success');
+                    refreshAji();
+                } catch (err) {
+                    if (err.code === '23505') {
+                        showToast('今日该服务器已有记录，不能重复上传', 'error');
+                    } else if (err.code === '23514') {
+                        showToast('数据格式错误 (UID/服务器)', 'error');
+                    } else {
+                        showToast('上传失败: ' + err.message, 'error');
+                    }
+                } finally {
+                    btn.disabled = false;
+                }
+            };
+
+
+            async function performSearch() {
+                const server = dom.shServer.value;
+                const cat = dom.shCat.value;
+                if (!server || !cat) {
+                    showToast('请选择搜索条件', 'info');
+                    return;
+                }
+
+                dom.shBtn.disabled = true;
+                dom.results.innerHTML = '<div style="text-align:center; padding:20px;">正在检索...</div>';
+
+                const showLocation = dom.showLocationToggle.checked;
+                const hideNoLocation = showLocation && dom.hideNoLocationToggle.checked;
+                try {
+                    const data = await apiGet(`/search?server=${encodeURIComponent(server)}&showLocation=${showLocation}`);
+                    const filtered = (data || []).filter(r => {
+                        if (!r.cat_cakes || !r.cat_cakes.includes(cat)) return false;
+                        if (!hideNoLocation) return true;
+                        return Array.isArray(r.cat_locations) && r.cat_locations.length === 3;
+                    });
+                    if (filtered.length === 0) {
+                        dom.results.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">本周暂无「${cat}」拥有者</div>`;
+                    } else {
+                        const uniqueMap = new Map();
+                        for (const row of filtered) {
+                            if (!uniqueMap.has(row.uid)) {
+                                uniqueMap.set(row.uid, row);
+                            }
+                        }
+                        const uniqueList = Array.from(uniqueMap.values());
+                        dom.results.innerHTML = uniqueList.map(r => {
+                            const hasLocation = showLocation && Array.isArray(r.cat_locations) && r.cat_locations.length === 3;
+                            return `
+                                    <div class="result-card">
+                                        <div class="result-info">
+                                            <div class="result-uid" onclick="copyText('${r.uid}')">${r.uid}<span class="server-tag">[${r.server}]</span></div>
+                                            <div class="result-cats">${r.cat_cakes.map((c, idx) => `<span class="result-cat-tag ${c === cat ? 'highlight' : ''}">${c}${hasLocation ? ' · ' + r.cat_locations[idx] : ''}</span>`).join('')}</div>
+                                        </div>
+                                    </div>
+                                `;
+                        }).join('');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    dom.results.innerHTML = '<div style="text-align:center; color:red;">查询出错，请重试</div>';
+                } finally {
+                    dom.shBtn.disabled = false;
+                }
+            }
+
+
+            async function uploadCatCakes() {
+                const uid = dom.uidInp.value.trim();
+                const server = dom.upServer.value;
+                const cats = getSelectedCatsOrdered();
+                const locationSelectedCount = selectedLocations.filter(Boolean).length;
+                if (!/^\d{9}$/.test(uid) || cats.length !== 3) return;
+                if (locationSelectedCount > 0 && locationSelectedCount < 3) {
+                    showToast('已填写部分地点，请补全三个地点或清空全部地点。', 'error');
+                    return;
+                }
+                if (locationSelectedCount === 3 && new Set(selectedLocations).size !== 3) {
+                    showToast('三个猫猫糕地点不能重复，请重新选择。', 'error');
+                    return;
+                }
+
+                dom.submitBtn.disabled = true;
+                dom.submitBtn.textContent = '提交中...';
+                try {
+                    const catLocations = locationSelectedCount === 3 ? [...selectedLocations] : [];
+                    await apiPost('/cat-cakes', {
+                        uid,
+                        server,
+                        cat_cakes: cats,
+                        cat_locations: catLocations
+                    });
+                    showToast('上传成功', 'success');
+                    dom.uidInp.value = '';
+                    selectedSet.clear();
+                    selectedOrder = [];
+                    selectedLocations = [null, null, null];
+                    document.querySelectorAll('.tag-item.selected').forEach(t => t.classList.remove('selected'));
+                    dom.locationSection.classList.add('collapsed');
+                    updateCollapseHint();
+                    renderLocationGroups();
+                    updateUploadState();
+                    await fetchWeeklyCount();
+                } catch (err) {
+                    if (err.code === '23505') {
+                        showToast('你本周已经上传过该服务器的记录，不可重复', 'error');
+                    } else if (err.code === '23514') {
+                        showToast('数据格式错误 (UID/服务器/猫糕数量/名称)', 'error');
+                    } else {
+                        showToast('提交失败: ' + err.message, 'error');
+                    }
+                } finally {
+                    dom.submitBtn.disabled = false;
+                    updateUploadState();
+                }
+            }
+
+
+            function toggleLocationSection() {
+                const section = dom.locationSection;
+                const isCollapsed = section.classList.contains('collapsed');
+                if (isCollapsed) {
+                    section.classList.remove('collapsed');
+                    dom.collapseHint.textContent = '点击折叠';
+                } else {
+                    section.classList.add('collapsed');
+                    updateCollapseHint();
+                }
+            }
+
+            function updateCollapseHint() {
+                const locationSelectedCount = selectedLocations.filter(Boolean).length;
+                if (locationSelectedCount === 0) {
+                    dom.collapseHint.textContent = '点击展开';
+                } else if (locationSelectedCount === 3) {
+                    dom.collapseHint.textContent = '已选3处 · 点击展开';
+                } else {
+                    dom.collapseHint.textContent = `已选${locationSelectedCount}/3 · 点击展开`;
+                }
+            }
+
+            function updateUploadState() {
+                const uid = dom.uidInp.value.trim();
+                const isValidUid = /^\d{9}$/.test(uid);
+                const catsOk = selectedSet.size === 3;
+                const serverOk = !!dom.upServer.value;
+                const locationSelectedCount = selectedLocations.filter(Boolean).length;
+                const locationOk = locationSelectedCount === 0 || locationSelectedCount === 3;
+
+                dom.selCount.textContent = selectedSet.size;
+                dom.uidHint.textContent = (uid.length > 0 && !isValidUid) ? 'UID格式错误' : '';
+                dom.uidHint.style.color = '#ff4d4f';
+
+                if (locationSelectedCount > 0 && locationSelectedCount < 3 && dom.locationSection.classList.contains('collapsed')) {
+                    dom.locationSection.classList.remove('collapsed');
+                    dom.collapseHint.textContent = '点击折叠';
+                }
+
+                if (dom.locationSection.classList.contains('collapsed')) {
+                    updateCollapseHint();
+                } else {
+                    dom.collapseHint.textContent = '点击折叠';
+                }
+
+                if (!serverOk) {
+                    dom.submitBtn.disabled = true;
+                    dom.submitBtn.textContent = '请选择服务器';
+                } else if (!isValidUid) {
+                    dom.submitBtn.disabled = true;
+                    dom.submitBtn.textContent = '请输入9位UID';
+                } else if (!catsOk) {
+                    dom.submitBtn.disabled = true;
+                    dom.submitBtn.textContent = `还需选择 ${3 - selectedSet.size} 个`;
+                } else if (!locationOk) {
+                    dom.submitBtn.disabled = true;
+                    dom.submitBtn.textContent = '请补全地点信息';
+                } else {
+                    dom.submitBtn.disabled = false;
+                    dom.submitBtn.textContent = '确认上传信息';
+                }
+            }
+
+            function renderLocationGroups() {
+                dom.locationGroups.innerHTML = '';
+                const selectedCats = getSelectedCatsOrdered();
+                for (let i = 0; i < 3; i++) {
+                    const group = document.createElement('div');
+                    group.className = 'location-group';
+                    const label = document.createElement('div');
+                    label.className = 'location-group-label';
+                    label.textContent = selectedCats[i] || '待选择';
+                    const grid = document.createElement('div');
+                    grid.className = 'location-chip-grid';
+                    LOCATION_OPTIONS.forEach(loc => {
+                        const chip = document.createElement('span');
+                        chip.className = 'location-chip';
+                        chip.textContent = loc;
+                        if (selectedLocations[i] === loc) chip.classList.add('selected');
+                        if (selectedLocations.includes(loc) && selectedLocations[i] !== loc) chip.classList.add('disabled');
+                        chip.onclick = () => {
+                            if (selectedLocations.includes(loc) && selectedLocations[i] !== loc) return;
+                            selectedLocations[i] = selectedLocations[i] === loc ? null : loc;
+                            renderLocationGroups();
+                            updateUploadState();
+                        };
+                        grid.appendChild(chip);
+                    });
+                    group.appendChild(label);
+                    group.appendChild(grid);
+                    dom.locationGroups.appendChild(group);
+                }
+                if (dom.locationSection.classList.contains('collapsed')) {
+                    updateCollapseHint();
+                }
+            }
+
+
+            function loadShowLocationSetting() {
+                const saved = localStorage.getItem(LS_KEY_SHOW_LOCATION);
+                dom.showLocationToggle.checked = saved === 'true';
+            }
+
+            function saveShowLocationSetting() {
+                localStorage.setItem(LS_KEY_SHOW_LOCATION, String(dom.showLocationToggle.checked));
+            }
+
+            function loadHideNoLocationSetting() {
+                const saved = localStorage.getItem(LS_KEY_HIDE_NO_LOCATION);
+                dom.hideNoLocationToggle.checked = saved === 'true';
+            }
+
+            function saveHideNoLocationSetting() {
+                localStorage.setItem(LS_KEY_HIDE_NO_LOCATION, String(dom.hideNoLocationToggle.checked));
+            }
+
+            function syncLocationFilterState() {
+                const enabled = dom.showLocationToggle.checked;
+                dom.hideNoLocationToggle.disabled = !enabled;
+                if (!enabled) {
+                    dom.hideNoLocationToggle.checked = false;
+                    saveHideNoLocationSetting();
+                }
+            }
+
+
+            function switchPanel(mode) {
+                const searchMode = mode === 'search';
+                dom.searchColumn.style.display = searchMode ? '' : 'none';
+                dom.uploadColumn.style.display = searchMode ? 'none' : '';
+                dom.contentGrid.classList.toggle('single-panel', true);
+                dom.searchTabBtn.classList.toggle('active', searchMode);
+                dom.uploadTabBtn.classList.toggle('active', !searchMode);
+                dom.searchTabBtn.setAttribute('aria-selected', searchMode ? 'true' : 'false');
+                dom.uploadTabBtn.setAttribute('aria-selected', searchMode ? 'false' : 'true');
+                dom.panelSwitcher.dataset.mode = searchMode ? 'search' : 'upload';
+            }
+
+
+            function initUI() {
+                CAT_NAMES.forEach(name => {
+                    const tag = document.createElement('div');
+                    tag.className = 'tag-item';
+                    tag.innerHTML = `<img src="image/${name}.png" onerror="this.style.display='none'">${name}`;
+                    tag.onclick = () => {
+                        if (selectedSet.has(name)) {
+                            const removedIndex = selectedOrder.indexOf(name);
+                            selectedSet.delete(name);
+                            selectedOrder = selectedOrder.filter(item => item !== name);
+                            if (removedIndex > -1) {
+                                selectedLocations.splice(removedIndex, 1);
+                                selectedLocations.push(null);
+                            }
+                            tag.classList.remove('selected');
+                        } else if (selectedSet.size < 3) {
+                            selectedSet.add(name);
+                            selectedOrder.push(name);
+                            tag.classList.add('selected');
+                        } else {
+                            showToast('最多选择3个', 'info');
+                            return;
+                        }
+                        renderLocationGroups();
+                        updateUploadState();
+                    };
+                    dom.tagGrid.appendChild(tag);
+
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    dom.shCat.appendChild(opt);
+                });
+
+                dom.locationSection.classList.add('collapsed');
+                updateCollapseHint();
+                updateUploadState();
+                renderLocationGroups();
+                updateMetaStatus();
+                loadShowLocationSetting();
+                loadHideNoLocationSetting();
+                syncLocationFilterState();
+                setInterval(() => {
+                    updateMetaStatus();
+                    refreshAji();
+                }, 60000);
+            }
+
+            function initWorker() {
+                refreshAji();
+                fetchWeeklyCount();
+            }
+
+            function bindEvents() {
+                dom.uidInp.addEventListener('input', () => {
+                    dom.uidInp.value = dom.uidInp.value.replace(/\D/g, '');
+                    updateUploadState();
+                });
+                dom.upServer.addEventListener('change', updateUploadState);
+                dom.shBtn.addEventListener('click', performSearch);
+                dom.submitBtn.addEventListener('click', uploadCatCakes);
+                dom.searchTabBtn.addEventListener('click', () => {
+                    const current = dom.panelSwitcher.dataset.mode || 'search';
+                    switchPanel(current === 'search' ? 'upload' : 'search');
+                });
+                dom.uploadTabBtn.addEventListener('click', () => {
+                    const current = dom.panelSwitcher.dataset.mode || 'search';
+                    switchPanel(current === 'upload' ? 'search' : 'upload');
+                });
+                dom.panelSwitcher.addEventListener('click', (event) => {
+                    if (event.target === dom.searchTabBtn || event.target === dom.uploadTabBtn) return;
+                    const current = dom.panelSwitcher.dataset.mode || 'search';
+                    switchPanel(current === 'search' ? 'upload' : 'search');
+                });
+                dom.locationToggleLabel.addEventListener('click', toggleLocationSection);
+                dom.showLocationToggle.addEventListener('change', () => {
+                    saveShowLocationSetting();
+                    syncLocationFilterState();
+                });
+                dom.hideNoLocationToggle.addEventListener('change', saveHideNoLocationSetting);
+                dom.filterFunnelBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    dom.filterMenu.classList.toggle('open');
+                    dom.filterMenu.setAttribute('aria-hidden', dom.filterMenu.classList.contains('open') ? 'false' : 'true');
+                });
+                document.addEventListener('click', (event) => {
+                    if (!dom.filterMenu.classList.contains('open')) return;
+                    if (dom.filterMenu.contains(event.target) || dom.filterFunnelBtn.contains(event.target)) return;
+                    dom.filterMenu.classList.remove('open');
+                    dom.filterMenu.setAttribute('aria-hidden', 'true');
+                });
+                dom.adminGearBtn.addEventListener('click', openAdminModal);
+                dom.adminCloseBtn.addEventListener('click', closeAdminModal);
+                dom.adminModalMask.addEventListener('click', (event) => {
+                    if (event.target === dom.adminModalMask) closeAdminModal();
+                });
+                dom.adminUidInput.addEventListener('input', () => {
+                    dom.adminUidInput.value = dom.adminUidInput.value.replace(/\D/g, '');
+                });
+                dom.adminDeleteUidBtn.addEventListener('click', () => adminDelete('delete_uid'));
+                dom.adminDeleteLastWeekBtn.addEventListener('click', () => adminDelete('delete_last_week'));
+                dom.adminDeleteAjiBtn.addEventListener('click', () => adminDelete('delete_aji'));
+            }
+
+            function main() {
+                initUI();
+                switchPanel('search');
+                bindEvents();
+                initWorker();
+            }
+
+            main();
+        })();
+    </script>
+</body>
+</html>
