@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>更换网址</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f1f5f9;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .card {
+            max-width: 620px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            padding: 2.5rem 2rem 3rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+
+        .notice-badge {
+            margin-bottom: 1.75rem;
+        }
+
+        .notice-icon {
+            width: 64px;
+            height: 64px;
+            background: #eef2ff;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 500;
+            color: #1e40af;
+        }
+
+        h1 {
+            font-size: 1.85rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .lead-message {
+            font-size: 1.1rem;
+            color: #334155;
+            background: #f8fafc;
+            padding: 0.9rem 1.2rem;
+            border-radius: 48px;
+            margin: 1.25rem 0 1.8rem;
+            display: inline-block;
+            font-weight: 450;
+            border: 1px solid #e2e8f0;
+        }
+
+        .description {
+            font-size: 1rem;
+            color: #1e293b;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .links-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.25rem;
+            margin: 1.75rem 0 2rem;
+        }
+
+        .destination-link {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 60px;
+            padding: 0.85rem 1.8rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #0f172a;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .destination-link:hover {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+        }
+
+        .destination-link:active {
+            transform: translateY(1px);
+        }
+
+        .primary-link {
+            background: #1e3a8a;
+            border-color: #1e3a8a;
+            color: white;
+            box-shadow: 0 4px 8px rgba(30,58,138,0.2);
+        }
+
+        .primary-link:hover {
+            background: #1e40af;
+            border-color: #1e40af;
+            background-color: #1e40af;
+            color: white;
+        }
+
+        .arrow-symbol {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .note {
+            font-size: 0.85rem;
+            color: #475569;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.8rem;
+            margin-top: 1.2rem;
+            letter-spacing: 0.2px;
+        }
+
+        .footer-meta {
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        @media (max-width: 520px) {
+            .card {
+                padding: 2rem 1.25rem 2.5rem;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            .destination-link {
+                padding: 0.7rem 1.4rem;
+                font-size: 0.95rem;
+            }
+            .links-container {
+                gap: 0.9rem;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #0f172a;
+            }
+            .card {
+                background: #1e293b;
+                box-shadow: 0 20px 35px -12px rgba(0,0,0,0.4);
+            }
+            h1 {
+                color: #f1f5f9;
+            }
+            .lead-message {
+                background: #0f172a;
+                color: #cbd5e1;
+                border-color: #334155;
+            }
+            .description {
+                color: #cbd5e6;
+            }
+            .destination-link {
+                background: #0f172a;
+                border-color: #334155;
+                color: #e2e8f0;
+            }
+            .destination-link:hover {
+                background: #1e293b;
+                border-color: #5b6e8c;
+            }
+            .primary-link {
+                background: #2563eb;
+                border-color: #2563eb;
+                color: white;
+            }
+            .primary-link:hover {
+                background: #3b82f6;
+                border-color: #3b82f6;
+            }
+            .note {
+                border-top-color: #334155;
+                color: #94a3b8;
+            }
+            .footer-meta {
+                color: #5b6e8c;
+            }
+            .notice-icon {
+                background: #1e293b;
+                color: #a5c9ff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="description">
+            因部分用户无法直接访问github.io,且github.io本就只是用来跳转，所以我决定停用该网页。 以下两个网址内容相同，可根据个人网络情况选择
+        </div>
+
+        <div class="links-container">
+            <a href="https://catcs.v6.army" class="destination-link primary-link" rel="noopener noreferrer">
+                catcs.v6.army
+            </a>
+            <a href="https://catce.v6.army" class="destination-link primary-link" rel="noopener noreferrer">
+                catce.v6.army
+            </a>
+        </div>
+    </div>
+</body>
+</html>
