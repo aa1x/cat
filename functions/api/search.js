@@ -1,40 +1,64 @@
-import { getShanghaiWeekStartUtcIso } from './_time.js';
+import { deserializeCatCakeRow, getDb, isValidServer } from './_db.js';
+import { cleanupOldCatCakeWeeks } from './_cleanup.js';
+import { cleanupOldCatCakeMarks } from './_cat-cake-marks.js';
 
 export async function onRequest(context) {
   try {
     const { request, env } = context;
-    const { SUPABASE_URL, SUPABASE_KEY } = env;
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
-      throw new Error('环境变量 SUPABASE_URL 或 SUPABASE_KEY 未设置');
-    }
-
     const url = new URL(request.url);
     const server = url.searchParams.get('server');
-    if (!server) throw new Error('缺少 server 参数');
-
-    const monday = getShanghaiWeekStartUtcIso();
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/cat_cakes?server=eq.${encodeURIComponent(server)}&created_at=gte.${monday}&order=created_at.desc`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.message || '搜索请求失败');
+    if (!isValidServer(server)) {
+      return jsonResponse({ message: 'server 参数必须为 官服 或 B服' }, 400);
     }
 
-    const data = await response.json();
-    return new Response(JSON.stringify(data || []), { headers: { 'Content-Type': 'application/json' } });
+    const db = getDb(env);
+    const weekStart = await cleanupOldCatCakeWeeks(db);
+    await cleanupOldCatCakeMarks(db, weekStart);
+    const { results = [] } = await db
+      .prepare(
+        `SELECT id, uid, server, cat_cakes, cat_locations, created_at, week_start
+         FROM cat_cakes
+         WHERE server = ? AND week_start = ?
+         ORDER BY created_at DESC, id DESC`
+      )
+      .bind(server, weekStart)
+      .all();
+
+    const rows = (results || []).map(deserializeCatCakeRow);
+    if (rows.length === 0) {
+      return jsonResponse(rows);
+    }
+
+    const { results: markRows = [] } = await db
+      .prepare(
+        `SELECT uid, reason_text
+         FROM cat_cake_marks
+         WHERE server = ? AND week_start = ?
+         ORDER BY created_at ASC, id ASC`
+      )
+      .bind(server, weekStart)
+      .all();
+
+    const markMap = new Map();
+    for (const mark of markRows || []) {
+      if (!mark?.uid || !mark?.reason_text) continue;
+      const reasons = markMap.get(mark.uid) || [];
+      if (!reasons.includes(mark.reason_text)) reasons.push(mark.reason_text);
+      markMap.set(mark.uid, reasons);
+    }
+
+    return jsonResponse(rows.map((row) => ({
+      ...row,
+      mark_reasons: markMap.get(row.uid) || [],
+    })));
   } catch (err) {
-    return new Response(
-      JSON.stringify({ message: err.message || '服务器内部错误' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return jsonResponse({ message: err.message || '服务器内部错误' }, 500);
   }
 }
 
+function jsonResponse(body, status = 200, extraHeaders = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...extraHeaders },
+  });
+}

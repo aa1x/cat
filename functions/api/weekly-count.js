@@ -1,39 +1,25 @@
-import { getShanghaiWeekStartUtcIso } from './_time.js';
+import { getDb } from './_db.js';
+import { cleanupOldCatCakeWeeks } from './_cleanup.js';
 
 export async function onRequest(context) {
   try {
-    const { SUPABASE_URL, SUPABASE_KEY } = context.env;
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
-      throw new Error('环境变量 SUPABASE_URL 或 SUPABASE_KEY 未设置');
-    }
+    const db = getDb(context.env);
+    const weekStart = await cleanupOldCatCakeWeeks(db);
+    const { results = [] } = await db
+      .prepare('SELECT COUNT(DISTINCT uid) AS count FROM cat_cakes WHERE week_start = ?')
+      .bind(weekStart)
+      .all();
+    const count = Number(results?.[0]?.count || 0);
 
-    const monday = getShanghaiWeekStartUtcIso();
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/cat_cakes?select=uid&created_at=gte.${monday}`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.message || 'Supabase 查询失败');
-    }
-
-    const data = await response.json();
-    const uniqueUids = new Set(data.map(r => r.uid));
-
-    return new Response(JSON.stringify({ count: uniqueUids.size }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ count });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ message: err.message || '服务器内部错误' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return jsonResponse({ message: err.message || '服务器内部错误' }, 500);
   }
 }
 
+function jsonResponse(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}

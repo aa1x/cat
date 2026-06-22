@@ -1,5 +1,6 @@
 const SHANGHAI_OFFSET_MS = 8 * 60 * 60 * 1000;
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const WEEK_MS = 7 * DAY_MS;
 
 export function getShanghaiWeekStartUtcIso(now = new Date()) {
   const nowDate = now instanceof Date ? now : new Date(now);
@@ -23,13 +24,11 @@ export function getShanghaiWeekStartUtcIso(now = new Date()) {
     monday4amShanghaiMs -= WEEK_MS;
   }
 
-  const monday4amUtcMs = monday4amShanghaiMs - SHANGHAI_OFFSET_MS;
-  return new Date(monday4amUtcMs).toISOString();
+  return new Date(monday4amShanghaiMs - SHANGHAI_OFFSET_MS).toISOString();
 }
 
 export function getShanghaiLastWeekStartUtcIso(now = new Date()) {
-  const thisWeekStartIso = getShanghaiWeekStartUtcIso(now);
-  const thisWeekStartMs = new Date(thisWeekStartIso).getTime();
+  const thisWeekStartMs = new Date(getShanghaiWeekStartUtcIso(now)).getTime();
   return new Date(thisWeekStartMs - WEEK_MS).toISOString();
 }
 
@@ -49,9 +48,13 @@ export function getShanghaiDayStart4amUtcIso(now = new Date()) {
   );
 
   if (shanghaiNowMs < dayStart4amShanghaiMs) {
-    dayStart4amShanghaiMs -= 24 * 60 * 60 * 1000;
+    dayStart4amShanghaiMs -= DAY_MS;
   }
 
-  const dayStart4amUtcMs = dayStart4amShanghaiMs - SHANGHAI_OFFSET_MS;
-  return new Date(dayStart4amUtcMs).toISOString();
+  return new Date(dayStart4amShanghaiMs - SHANGHAI_OFFSET_MS).toISOString();
+}
+
+export function getShanghaiAjiDate(now = new Date()) {
+  const dayStartUtcMs = new Date(getShanghaiDayStart4amUtcIso(now)).getTime();
+  return new Date(dayStartUtcMs + SHANGHAI_OFFSET_MS).toISOString().slice(0, 10);
 }

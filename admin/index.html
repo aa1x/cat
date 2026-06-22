@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="theme-color" content="#f5f5f7">
+    <title>管理界面｜猫猫糕统计</title>
+    <link rel="icon" type="image/x-icon" href="/ico/favicon.ico">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .admin-page-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .admin-page-card { width: min(100%, 440px); }
+        .admin-page-title { margin: 0 0 8px; color: var(--text-main); font-size: 26px; line-height: 1.25; font-weight: 900; }
+        .admin-page-desc { margin: 0 0 20px; color: var(--text-sub); font-size: 13px; line-height: 1.7; font-weight: 700; }
+        .admin-page-actions { display: grid; gap: 10px; margin-top: 16px; }
+        .admin-page-hint { margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: #fafafa; border: 1px solid var(--border); color: #666; font-size: 12px; line-height: 1.65; }
+        .admin-hidden { display: none; }
+    </style>
+</head>
+<body>
+    <main class="admin-page-wrapper">
+        <section id="loginCard" class="card admin-page-card" aria-labelledby="adminLoginTitle">
+            <h1 id="adminLoginTitle" class="admin-page-title">管理登录</h1>
+            <p class="admin-page-desc">请输入管理密码后进入管理面板。管理面板中的所有 API 请求都会携带该密码。</p>
+            <div class="form-group">
+                <label class="form-label" for="adminLoginPasswordInput">密码</label>
+                <input id="adminLoginPasswordInput" type="password" class="form-input" autocomplete="current-password" placeholder="请输入管理密码">
+            </div>
+            <button id="adminLoginBtn" class="btn btn-primary" type="button">进入管理面板</button>
+        </section>
+
+        <section id="adminPanel" class="card admin-page-card admin-hidden" aria-labelledby="adminPageTitle">
+            <h1 id="adminPageTitle" class="admin-page-title">管理界面</h1>
+            <p class="admin-page-desc">用于执行受密码保护的管理删除操作。每周数据与每日阿基喵利过期记录已由 API 自动清理，不再提供手动删除上周数据按钮。</p>
+
+            <div class="form-group">
+                <label class="form-label" for="adminUidInput">UID（9 位数字）</label>
+                <input id="adminUidInput" type="text" class="form-input" inputmode="numeric" maxlength="9" placeholder="删除指定 UID 记录时填写">
+            </div>
+
+            <div class="admin-page-actions">
+                <button id="adminDeleteUidBtn" class="btn btn-primary" type="button">删除指定 UID 的记录</button>
+                <button id="adminDeleteAjiBtn" class="btn btn-primary" type="button">删除今日阿基喵利数据</button>
+                <button id="adminReportBtn" class="btn btn-outline" type="button">处理阿基喵利举报</button>
+                <button id="adminLogoutBtn" class="btn btn-outline" type="button">退出登录</button>
+            </div>
+
+            <div class="admin-page-hint">不会在用户界面展示管理入口；请直接访问 <code>/admin</code> 使用此页面。</div>
+        </section>
+    </main>
+    <div id="toastContainer"></div>
+
+    <script>
+        (function () {
+            const API_BASE = '/api';
+            const ADMIN_PASSWORD_KEY = 'catCakeAdminPassword';
+            const dom = {
+                loginCard: document.getElementById('loginCard'),
+                panel: document.getElementById('adminPanel'),
+                loginPassword: document.getElementById('adminLoginPasswordInput'),
+                loginBtn: document.getElementById('adminLoginBtn'),
+                uid: document.getElementById('adminUidInput'),
+                deleteUid: document.getElementById('adminDeleteUidBtn'),
+                deleteAji: document.getElementById('adminDeleteAjiBtn'),
+                reportBtn: document.getElementById('adminReportBtn'),
+                logoutBtn: document.getElementById('adminLogoutBtn')
+            };
+
+            function showToast(msg, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                if (type === 'error') container.querySelectorAll('.toast.error').forEach(node => node.remove());
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = msg;
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+
+            async function apiPost(path, body) {
+                const res = await fetch(API_BASE + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw { message: err.message || '请求失败', code: err.code, status: res.status };
+                }
+                return res.json();
+            }
+
+            function getPassword() { return sessionStorage.getItem(ADMIN_PASSWORD_KEY) || ''; }
+            function showPanel() { dom.loginCard.classList.add('admin-hidden'); dom.panel.classList.remove('admin-hidden'); }
+            function showLogin() { dom.panel.classList.add('admin-hidden'); dom.loginCard.classList.remove('admin-hidden'); dom.loginPassword.focus(); }
+            function setBusy(isBusy) { dom.deleteUid.disabled = isBusy; dom.deleteAji.disabled = isBusy; dom.reportBtn.disabled = isBusy; }
+
+            async function login() {
+                const password = dom.loginPassword.value;
+                if (!password) return showToast('请输入密码', 'error');
+                dom.loginBtn.disabled = true;
+                try {
+                    await apiPost('/admin-report', { action: 'list', password });
+                    sessionStorage.setItem(ADMIN_PASSWORD_KEY, password);
+                    showPanel();
+                    showToast('登录成功', 'success');
+                } catch (err) {
+                    showToast(`登录失败: ${err.message}`, 'error');
+                } finally {
+                    dom.loginBtn.disabled = false;
+                }
+            }
+
+            async function adminDelete(action) {
+                const password = getPassword();
+                const uid = dom.uid.value.trim();
+                if (!password) { showLogin(); return showToast('请先登录', 'error'); }
+                if (action === 'delete_uid' && !/^\d{9}$/.test(uid)) return showToast('UID 必须是 9 位数字', 'error');
+                setBusy(true);
+                try {
+                    const payload = { action, password, ...(action === 'delete_uid' ? { uid } : {}) };
+                    const data = await apiPost('/admin-delete', payload);
+                    showToast(`删除成功，影响行数: ${data.deleted ?? '未知'}`, 'success');
+                } catch (err) {
+                    showToast(`删除失败: ${err.message}`, 'error');
+                    if (err.status === 401) { sessionStorage.removeItem(ADMIN_PASSWORD_KEY); showLogin(); }
+                } finally {
+                    setBusy(false);
+                }
+            }
+
+            dom.loginBtn.addEventListener('click', login);
+            dom.loginPassword.addEventListener('keydown', (event) => { if (event.key === 'Enter') login(); });
+            dom.uid.addEventListener('input', () => { dom.uid.value = dom.uid.value.replace(/\D/g, ''); });
+            dom.deleteUid.addEventListener('click', () => adminDelete('delete_uid'));
+            dom.deleteAji.addEventListener('click', () => adminDelete('delete_aji'));
+            dom.reportBtn.addEventListener('click', () => { window.location.href = '/admin/report'; });
+            dom.logoutBtn.addEventListener('click', () => { sessionStorage.removeItem(ADMIN_PASSWORD_KEY); showLogin(); });
+
+            if (getPassword()) showPanel(); else showLogin();
+        })();
+    </script>
+</body>
+</html>

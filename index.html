@@ -3,930 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>猫猫糕统计</title>
-    <link rel="icon" type="image/x-icon" href="ico/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="ico/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="ico/favicon-16x16.png">
-    <style>
-        :root {
-            --bg: #f5f5f7;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-sub: #888888;
-            --accent: #333333;
-            --accent-dark: #000000;
-            --tag-bg: #f9f9f9;
-            --tag-selected-bg: #eeeeee;
-            --tag-selected-border: #999999;
-            --tag-selected-text: #000000;
-            --border: #e8e8e8;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            --radius: 16px;
-            --radius-sm: 10px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            padding: 20px 16px 80px;
-            line-height: 1.5;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-
-        input,
-        textarea {
-            -webkit-user-select: auto;
-            user-select: auto;
-        }
-
-        .main-wrapper {
-            max-width: 1000px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .banner-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: #fafafa;
-            border: 1px solid var(--border);
-            font-size: 12px;
-            font-weight: 600;
-            color: #444;
-            white-space: nowrap;
-        }
-
-        .banner-label {
-            color: #777;
-        }
-
-
-        .meta-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: #fafafa;
-            border: 1px solid var(--border);
-            font-size: 12px;
-            font-weight: 600;
-            color: #444;
-            align-self: flex-end;
-            margin-bottom: -8px;
-        }
-
-
-        .toolbar-layout {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        .panel-switcher {
-            display: inline-flex;
-            background: #fff;
-            border: 1px solid #fff;
-            border-radius: 999px;
-            padding: 3px;
-            gap: 2px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-            width: fit-content;
-            flex-shrink: 0;
-        }
-
-        .switch-btn {
-            border: none;
-            background: transparent;
-            color: #666;
-            font-weight: 700;
-            font-size: 13px;
-            padding: 7px 15px;
-            border-radius: 999px;
-            cursor: pointer;
-            transition: background-color 0.22s ease, color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
-            white-space: nowrap;
-        }
-
-            .switch-btn.active {
-                background: #111;
-                color: #fff;
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
-                animation: switchPulse 0.2s ease;
-            }
-
-            .switch-btn:not(.active):hover {
-                transform: translateY(-1px);
-                background: rgba(0, 0, 0, 0.05);
-            }
-
-        .aji-compact {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            flex: 0 1 auto;
-            min-width: 0;
-            margin-left: auto;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 10px 14px;
-            box-shadow: var(--shadow);
-        }
-
-        .aji-compact-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #555;
-            white-space: nowrap;
-            flex-shrink: 0;
-            letter-spacing: 0.3px;
-        }
-
-        .aji-compact-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .aji-compact-server-group {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .aji-compact-server-tag {
-            font-size: 11px;
-            font-weight: 700;
-            color: #666;
-            background: #f5f5f5;
-            padding: 3px 8px;
-            border-radius: 999px;
-            letter-spacing: 0.3px;
-        }
-
-        .aji-compact-content {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            min-width: 0;
-        }
-
-            .aji-compact-content .aji-info {
-                font-weight: 700;
-                color: var(--accent-dark);
-                font-size: 13px;
-                background: #eeeeee;
-                padding: 3px 9px;
-                border-radius: 6px;
-                cursor: pointer;
-                letter-spacing: 0.3px;
-                white-space: nowrap;
-            }
-
-            .aji-compact-content .aji-input {
-                max-width: 85px;
-                padding: 5px 8px;
-                font-size: 12px;
-                border: 1.5px solid var(--border);
-                border-radius: 6px;
-                background: #fafafa;
-                outline: none;
-                color: var(--text-main);
-                transition: all 0.2s;
-            }
-
-                .aji-compact-content .aji-input:focus {
-                    border-color: var(--accent);
-                    background: #fff;
-                    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.04);
-                }
-
-            .aji-compact-content .aji-btn {
-                padding: 5px 11px;
-                border-radius: 14px;
-                font-size: 11px;
-                font-weight: 700;
-                cursor: pointer;
-                border: 1.5px solid var(--accent);
-                background: #fff;
-                color: var(--accent-dark);
-                white-space: nowrap;
-                transition: all 0.2s;
-            }
-
-                .aji-compact-content .aji-btn:hover {
-                    background: #f5f5f5;
-                }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        @media (min-width: 1024px) {
-            .content-grid {
-                grid-template-columns: 420px 1fr;
-                align-items: start;
-            }
-
-            .left-column {
-                position: sticky;
-                top: 20px;
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
+    <meta name="description" content="猫猫糕统计提供崩坏：星穹铁道列车改造奇遇常驻活动猫猫糕拥有者搜索、每周收录统计、阿基喵利记录与猫猫糕上传工具，支持上传猫猫糕地点信息。">
+    <meta name="keywords" content="猫猫糕统计,猫猫糕,崩坏:星穹铁道,崩坏星穹铁道,星穹铁道猫猫糕,阿基喵利,官服,B服,列车改造奇遇,常驻活动,猫猫糕搜索">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#f5f5f7">
+    <meta name="application-name" content="猫猫糕统计">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="猫猫糕统计">
+    <meta property="og:title" content="猫猫糕统计｜星穹铁道猫猫糕搜索与上传">
+    <meta property="og:description" content="按服务器与猫猫糕名称快速搜索拥有者，上传每周猫猫糕记录。">
+    <meta property="og:url" content="https://catcake.v6.army/">
+    <meta property="og:image" content="https://catcake.v6.army/image/%E9%98%BF%E5%9F%BA%E5%96%B5%E5%88%A9.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="猫猫糕统计｜崩坏:星穹铁道猫猫糕搜索与上传">
+    <meta name="twitter:description" content="按官服或B服查询猫猫糕拥有者，上传每周猫猫糕数据，查看阿基喵利记录。">
+    <link rel="canonical" href="https://catcake.v6.army/">
+    <title>猫猫糕统计｜星穹铁道猫猫糕搜索与上传</title>
+    <link rel="icon" type="image/x-icon" href="/ico/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/ico/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/ico/favicon-16x16.png">
+    <link rel="preload" href="/styles.css" as="style">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "猫猫糕统计",
+            "url": "https://catcake.v6.army/",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "zh-CN",
+            "description": "崩坏：星穹铁道猫猫糕搜索、上传和每周统计工具，支持官服与B服。",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "CNY"
             }
         }
-
-        .content-grid.single-panel {
-            grid-template-columns: 1fr !important;
-        }
-
-        .footer-meta {
-            margin-top: 18px;
-            text-align: center;
-            font-size: 11px;
-            color: #999;
-            line-height: 1.6;
-        }
-
-            .footer-meta a {
-                color: #888;
-                text-decoration: none;
-            }
-
-                .footer-meta a:hover {
-                    text-decoration: underline;
-                }
-
-            .footer-meta .feedback-link {
-                text-decoration: underline;
-            }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            transition: transform 0.2s;
-        }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #000000;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .title-subtext {
-            font-size: 11px;
-            font-weight: normal;
-            color: var(--text-sub);
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        @media (min-width: 760px) {
-            .form-row {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        .form-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            color: #333333;
-            margin-bottom: 6px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            background: #fafafa;
-            transition: all 0.2s;
-            outline: none;
-            color: var(--text-main);
-        }
-
-            .form-input:focus {
-                border-color: var(--accent);
-                background: #fff;
-                box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
-            }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 24px;
-            border-radius: 24px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #fff;
-            width: 100%;
-        }
-
-            .btn-primary:hover {
-                background: var(--accent-dark);
-                transform: translateY(-1px);
-            }
-
-            .btn-primary:active {
-                transform: translateY(0);
-            }
-
-            .btn-primary:disabled {
-                background: #cccccc;
-                cursor: not-allowed;
-                transform: none;
-            }
-
-        .btn-outline {
-            background: #fff;
-            border: 1.5px solid var(--accent);
-            color: var(--accent-dark);
-        }
-
-            .btn-outline:hover {
-                background: #f5f5f5;
-            }
-
-        .tag-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            gap: 10px;
-            margin: 10px 0 15px;
-        }
-
-        .tag-item {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            border-radius: var(--radius-sm);
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            background: var(--tag-bg);
-            border: 1.5px solid transparent;
-            transition: all 0.2s;
-        }
-
-            .tag-item img {
-                width: 36px;
-                height: 36px;
-                margin-right: 8px;
-                border-radius: 6px;
-                object-fit: cover;
-                background: #eee;
-            }
-
-            .tag-item:hover {
-                transform: scale(1.02);
-                background: #f0f0f0;
-            }
-
-            .tag-item.selected {
-                background: var(--tag-selected-bg);
-                border-color: var(--tag-selected-border);
-                color: var(--tag-selected-text);
-            }
-
-        .results-area {
-            margin-top: 16px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-            .results-area > :not(.result-card) {
-                grid-column: 1 / -1;
-            }
-
-        .result-card {
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .result-info {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .result-uid {
-            font-weight: 800;
-            font-size: 17px;
-            color: var(--text-main);
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .result-cats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-        }
-
-        .result-cat-tag {
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            background: #f0f0f0;
-            color: #666;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-            .result-cat-tag.highlight {
-                background: var(--tag-selected-bg);
-                color: var(--tag-selected-text);
-                box-shadow: inset 0 0 0 1px var(--tag-selected-border);
-            }
-
-        .server-tag {
-            font-size: 12px;
-            color: var(--text-sub);
-            font-weight: normal;
-            margin-left: 6px;
-        }
-
-        .location-section {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px dashed var(--border);
-        }
-
-            .location-section .form-label {
-                cursor: pointer;
-                user-select: none;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                transition: color 0.2s;
-            }
-
-                .location-section .form-label:hover {
-                    color: #000;
-                }
-
-                .location-section .form-label .collapse-arrow {
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 20px;
-                    height: 20px;
-                    flex-shrink: 0;
-                    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-                    font-size: 10px;
-                    color: #888;
-                    line-height: 1;
-                }
-
-            .location-section.collapsed .form-label .collapse-arrow {
-                transform: rotate(-90deg);
-            }
-
-            .location-section .form-label .collapse-hint {
-                font-size: 11px;
-                font-weight: 400;
-                color: #aaa;
-                margin-left: auto;
-            }
-
-        #locationGroups {
-            overflow: hidden;
-            transition: max-height 0.35s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.3s ease, margin-top 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
-            max-height: 600px;
-            opacity: 1;
-            margin-top: 8px;
-        }
-
-        .location-section.collapsed #locationGroups {
-            max-height: 0;
-            opacity: 0;
-            margin-top: 0;
-        }
-
-        .location-group {
-            margin-bottom: 10px;
-        }
-
-        .location-group-label {
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: #555;
-        }
-
-        .location-chip-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .location-chip {
-            padding: 6px 10px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: #fafafa;
-            font-size: 12px;
-            cursor: pointer;
-            user-select: none;
-            white-space: nowrap;
-        }
-
-            .location-chip.selected {
-                background: var(--tag-selected-bg);
-                box-shadow: inset 0 0 0 1px var(--tag-selected-border);
-                color: var(--tag-selected-text);
-            }
-
-            .location-chip.disabled {
-                opacity: .5;
-                cursor: not-allowed;
-            }
-
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 6px 0 16px;
-            user-select: none;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-            flex-shrink: 0;
-        }
-
-            .toggle-switch input {
-                opacity: 0;
-                width: 0;
-                height: 0;
-                position: absolute;
-                pointer-events: none;
-            }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #d1d1d6;
-            border-radius: 24px;
-            transition: background-color 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-
-            .toggle-slider::before {
-                content: "";
-                position: absolute;
-                height: 20px;
-                width: 20px;
-                left: 2px;
-                bottom: 2px;
-                background-color: #fff;
-                border-radius: 50%;
-                transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-            }
-
-        .toggle-switch input:checked + .toggle-slider {
-            background-color: #333333;
-        }
-
-            .toggle-switch input:checked + .toggle-slider::before {
-                transform: translateX(20px);
-            }
-
-        .toggle-switch input:focus-visible + .toggle-slider {
-            outline: 2px solid #999;
-            outline-offset: 2px;
-        }
-
-        .toggle-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #555;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 700;
-            z-index: 1000;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-            animation: toastIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-        }
-
-            .toast.success {
-                background: #333333;
-                color: #fff;
-            }
-
-            .toast.error {
-                background: #ff4d4f;
-                color: #fff;
-            }
-
-            .toast.info {
-                background: #666666;
-                color: #fff;
-            }
-
-        @keyframes switchPulse {
-            from {
-                transform: scale(0.98);
-            }
-            to {
-                transform: scale(1);
-            }
-        }
-
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                bottom: 0;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .switch-btn {
-                transition: none;
-            }
-
-            .switch-btn.active,
-            .switch-btn:not(.active):hover {
-                transform: none;
-                box-shadow: none;
-                animation: none;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .meta-status {
-                font-size: 11px;
-                gap: 6px;
-                padding: 5px 8px;
-                margin-bottom: -2px;
-            }
-
-            .toolbar-layout {
-                gap: 8px;
-            }
-
-            .aji-compact {
-                gap: 6px;
-                width: 100%;
-                margin-left: 0;
-                padding: 8px 10px;
-            }
-
-            .aji-compact-row {
-                gap: 5px;
-            }
-
-            .aji-compact-content .aji-input {
-                max-width: 72px;
-                padding: 4px 6px;
-                font-size: 11px;
-            }
-
-            .aji-compact-content .aji-btn {
-                padding: 4px 9px;
-                font-size: 10px;
-            }
-
-            .aji-compact-content .aji-info {
-                font-size: 11px;
-                padding: 2px 7px;
-            }
-
-            .aji-compact-server-tag {
-                font-size: 10px;
-                padding: 2px 6px;
-            }
-
-            .aji-compact-label {
-                font-size: 11px;
-            }
-
-            .switch-btn {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
-
-            .results-area {
-                grid-template-columns: 1fr;
-            }
-
-            .toggle-row {
-                margin: 4px 0 12px;
-                gap: 8px;
-            }
-
-            .toggle-label {
-                font-size: 12px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .tag-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .result-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .toolbar-layout {
-                gap: 6px;
-            }
-
-            .aji-compact-row {
-                gap: 4px;
-            }
-
-            .aji-compact-content .aji-input {
-                max-width: 64px;
-            }
-        }
-
-        .admin-gear-btn {
-            position: fixed;
-            right: 12px;
-            bottom: 12px;
-            border: none;
-            background: transparent;
-            color: #000;
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
-            padding: 0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .admin-gear-btn svg {
-            width: 18px;
-            height: 18px;
-            display: block;
-        }
-
-        .admin-modal-mask {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.35);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1100;
-        }
-
-
-        .search-filter-row {
-            position: relative;
-            display: flex;
-            justify-content: flex-start;
-            margin-bottom: 4px;
-        }
-
-        .filter-funnel-btn {
-            width: 34px;
-            height: 34px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            background: #fff;
-            color: #555;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .filter-funnel-btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .filter-menu {
-            position: absolute;
-            top: 40px;
-            left: 0;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            padding: 10px;
-            min-width: 220px;
-            display: none;
-            z-index: 15;
-        }
-
-        .filter-menu.open {
-            display: grid;
-            gap: 8px;
-        }
-
-        .filter-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #444;
-            cursor: pointer;
-        }
-
-        .filter-menu-item input:disabled + span {
-            color: #aaa;
-        }
-
-        .admin-modal-mask.open { display: flex; }
-        .admin-modal { background: #fff; padding: 16px; border-radius: 12px; width: min(92vw, 360px); }
-        .admin-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 700; }
-        .admin-close-btn { border: none; background: transparent; cursor: pointer; font-size: 20px; line-height: 1; }
-        .admin-modal .form-group { margin-bottom: 10px; }
-        .admin-actions { display: grid; gap: 8px; margin-top: 6px; }
-    </style>
+    </script>
 </head>
-<body>
-    <div class="main-wrapper">
-        <div class="meta-status">
+<body class="page-loading">
+    <div id="pageLoadingOverlay" class="page-loading-overlay" role="status" aria-live="polite">
+        <div class="page-loading-card">
+            <div class="page-loading-spinner" aria-hidden="true"></div>
+            <div>加载中...</div>
+        </div>
+    </div>
+    <main class="main-wrapper">
+        <h1 class="visually-hidden">猫猫糕统计</h1>
+        <div class="meta-status" aria-label="数据刷新与收录状态">
             <span>下次刷新：<span id="nextRefreshText">加载中...</span></span>
             <span>|</span>
             <span>本周收录:<span id="weeklyCountText">加载中...</span></span>
@@ -941,11 +67,11 @@
                 <span class="aji-compact-label">阿基喵利</span>
                 <div class="aji-compact-row">
                     <div class="aji-compact-server-group">
-                        <span class="aji-compact-server-tag">官服</span>
+                        <button class="aji-compact-server-tag" type="button" data-aji-report-server="官服" title="举报官服阿基喵利">官服</button>
                         <div class="aji-compact-content" id="ajiContent-官服">...</div>
                     </div>
                     <div class="aji-compact-server-group">
-                        <span class="aji-compact-server-tag">B服</span>
+                        <button class="aji-compact-server-tag" type="button" data-aji-report-server="B服" title="举报B服阿基喵利">B服</button>
                         <div class="aji-compact-content" id="ajiContent-B服">...</div>
                     </div>
                 </div>
@@ -955,7 +81,7 @@
         <div class="content-grid">
             <div class="left-column" id="searchColumn">
                 <section class="card panel-card" id="searchPanel">
-                    <div class="card-title">搜索</div>
+                    <h2 class="card-title">搜索</h2>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">服务器</label>
@@ -997,15 +123,8 @@
 
             <div class="right-column" id="uploadColumn">
                 <section class="card panel-card" id="uploadPanel">
-                    <div class="card-title">上传</div>
+                    <h2 class="card-title">上传</h2>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">所属服务器</label>
-                            <select id="uploadServerSelect" class="form-input">
-                                <option value="官服">官服</option>
-                                <option value="B服">B服</option>
-                            </select>
-                        </div>
                         <div class="form-group">
                             <label class="form-label">游戏UID</label>
                             <input type="text" id="uidInput" class="form-input" placeholder="请输入9位数字UID" maxlength="9">
@@ -1030,42 +149,65 @@
                     <button class="btn btn-primary" id="submitBtn" disabled>请完善信息</button>
                 </section>
             </div>
-        </div>
-        <footer class="footer-meta">
-            <div>仓库:<a href="https://github.com/aa1x/cat" target="_blank" rel="noopener noreferrer" class="feedback-link">AA1X/cat</a>&nbsp&nbsp许可证:<a href="https://opensource.org/license/MIT" target="_blank" rel="noopener noreferrer" class="feedback-link">MIT</a></div>
-            <div>米游社:<a href="https://www.miyoushe.com/sr/accountCenter/postList?id=307745071" target="_blank" rel="noopener noreferrer" class="feedback-link">量产型猫娘</a></div>
-            <div>反馈:<a href="mailto:AiX_89655@outlook.com" class="feedback-link">邮箱</a></div>
         </footer>
-    </div>
+    </main>
     <div id="toastContainer"></div>
-    <button id="adminGearBtn" class="admin-gear-btn" type="button" aria-label="快捷删除">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.43 12.98a7.93 7.93 0 0 0 .05-.98 7.93 7.93 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.57 7.57 0 0 0-1.69-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65a7.57 7.57 0 0 0-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.57 11a7.93 7.93 0 0 0-.05.98c0 .33.02.66.05.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.52.4 1.09.73 1.69.98l.38 2.65a.5.5 0 0 0 .5.42h4a.5.5 0 0 0 .5-.42l.38-2.65c.6-.25 1.17-.58 1.69-.98l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5z"/></svg>
-    </button>
-    <div id="adminModalMask" class="admin-modal-mask" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
-        <div class="admin-modal">
-            <div class="admin-modal-header">
-                <span id="adminModalTitle">快捷删除</span>
-                <button id="adminCloseBtn" class="admin-close-btn" type="button" aria-label="关闭">×</button>
+    <div id="announcementModalMask" class="announcement-modal-mask" role="dialog" aria-modal="true" aria-labelledby="announcementTitle" aria-hidden="true">
+        <div class="announcement-modal">
+            <div class="announcement-modal-header">
+                <span class="announcement-kicker">站点公告</span>
+                <button id="announcementCloseBtn" class="announcement-close-btn" type="button" aria-label="关闭公告">×</button>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="adminPasswordInput">密码</label>
-                <input id="adminPasswordInput" type="password" class="form-input" autocomplete="current-password">
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="adminUidInput">UID（9位数字）</label>
-                <input id="adminUidInput" type="text" class="form-input" maxlength="9" placeholder="仅删除指定 UID 时填写">
-            </div>
-            <div class="admin-actions">
-                <button id="adminDeleteUidBtn" class="btn btn-primary" type="button">删除指定 UID 的记录</button>
-                <button id="adminDeleteLastWeekBtn" class="btn btn-primary" type="button">删除上周数据</button>
-                <button id="adminDeleteAjiBtn" class="btn btn-primary" type="button">删除阿基喵利数据</button>
-            </div>
+            <h2 id="announcementTitle" class="announcement-title"></h2>
+            <time id="announcementTime" class="announcement-time" datetime=""></time>
+            <div id="announcementContent" class="announcement-content"></div>
+            <label class="announcement-snooze">
+                <input id="announcementSnoozeInput" type="checkbox">
+                <span>在下次更新前不再弹出</span>
+            </label>
+            <button id="announcementConfirmBtn" class="btn btn-primary announcement-confirm-btn" type="button">知道了</button>
         </div>
     </div>
 
+
+    <div id="ajiReportModalMask" class="aji-report-modal-mask" role="dialog" aria-modal="true" aria-labelledby="ajiReportTitle" aria-hidden="true">
+        <div class="aji-report-modal">
+            <div class="aji-report-modal-header">
+                <span id="ajiReportTitle">举报</span>
+                <button id="ajiReportCloseBtn" class="aji-report-close-btn" type="button" aria-label="关闭举报弹窗">×</button>
+            </div>
+            <div id="ajiReportLoading" class="aji-report-loading" hidden>
+                <div class="aji-report-loading-spinner" aria-hidden="true"></div>
+                <span>加载中...</span>
+            </div>
+            <p id="ajiReportPrompt" class="aji-report-prompt"></p>
+            <div id="ajiReportActions" class="aji-report-actions">
+                <button class="btn btn-primary" type="button" data-aji-report-reason="not_visitable">未开启可拜访</button>
+                <button class="btn btn-primary" type="button" data-aji-report-reason="no_aji">车厢无阿基喵利</button>
+            </div>
+            <p id="ajiReportWarning" class="aji-report-warning">请勿虚假举报。</p>
+        </div>
+    </div>
+
+    <div id="catCakeMarkModalMask" class="aji-report-modal-mask" role="dialog" aria-modal="true" aria-labelledby="catCakeMarkTitle" aria-hidden="true">
+        <div class="aji-report-modal">
+            <div class="aji-report-modal-header">
+                <span id="catCakeMarkTitle">标记搜索结果</span>
+                <button id="catCakeMarkCloseBtn" class="aji-report-close-btn" type="button" aria-label="关闭标记弹窗">×</button>
+            </div>
+            <p id="catCakeMarkPrompt" class="aji-report-prompt"></p>
+            <div id="catCakeMarkActions" class="aji-report-actions">
+                <button class="btn btn-primary" type="button" data-cat-cake-mark-reason="not_visitable">未开启可拜访</button>
+                <button class="btn btn-primary" type="button" data-cat-cake-mark-reason="wrong_location">地点信息错误</button>
+                <button class="btn btn-primary" type="button" data-cat-cake-mark-reason="wrong_cat_info">猫猫糕信息错误</button>
+            </div>>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
     <script>
         (function () {
-            // 所有 API 请求统一前缀（Cloudflare Pages 部署后就是当前域名）
             const API_BASE = '/api';
 
             const CAT_NAMES = ['垃圾糕', '冰糕', '星辰拿铁', '蜂蜜骰子', '芝麻酥', '游戏糕手', '红豆牛奶', '雪顶椰椰', '花见团子',
@@ -1077,6 +219,12 @@
             ];
             const LS_KEY_SHOW_LOCATION = 'catCakeShowLocation';
             const LS_KEY_HIDE_NO_LOCATION = 'catCakeHideNoLocation';
+            const LS_KEY_ANNOUNCEMENT_ACK = 'catCakeAnnouncementAck';
+            const CAT_CAKE_MARK_REASON_LABELS = {
+                not_visitable: '未开启可拜访',
+                wrong_location: '地点信息错误',
+                wrong_cat_info: '猫猫糕信息错误'
+            };
             const TIMEZONE = 'Asia/Shanghai';
 
             const dom = {
@@ -1085,7 +233,6 @@
                 uidInp: document.getElementById('uidInput'),
                 uidHint: document.getElementById('uidHint'),
                 submitBtn: document.getElementById('submitBtn'),
-                upServer: document.getElementById('uploadServerSelect'),
                 shServer: document.getElementById('searchServerSelect'),
                 shCat: document.getElementById('searchCatSelect'),
                 shBtn: document.getElementById('searchBtn'),
@@ -1108,25 +255,41 @@
                 hideNoLocationToggle: document.getElementById('hideNoLocationToggle'),
                 filterFunnelBtn: document.getElementById('filterFunnelBtn'),
                 filterMenu: document.getElementById('filterMenu'),
-                adminGearBtn: document.getElementById('adminGearBtn'),
-                adminModalMask: document.getElementById('adminModalMask'),
-                adminCloseBtn: document.getElementById('adminCloseBtn'),
-                adminPasswordInput: document.getElementById('adminPasswordInput'),
-                adminUidInput: document.getElementById('adminUidInput'),
-                adminDeleteUidBtn: document.getElementById('adminDeleteUidBtn'),
-                adminDeleteLastWeekBtn: document.getElementById('adminDeleteLastWeekBtn'),
-                adminDeleteAjiBtn: document.getElementById('adminDeleteAjiBtn')
+                announcementModalMask: document.getElementById('announcementModalMask'),
+                announcementCloseBtn: document.getElementById('announcementCloseBtn'),
+                announcementTitle: document.getElementById('announcementTitle'),
+                announcementTime: document.getElementById('announcementTime'),
+                announcementContent: document.getElementById('announcementContent'),
+                announcementSnoozeInput: document.getElementById('announcementSnoozeInput'),
+                announcementConfirmBtn: document.getElementById('announcementConfirmBtn'),
+                ajiReportModalMask: document.getElementById('ajiReportModalMask'),
+                ajiReportCloseBtn: document.getElementById('ajiReportCloseBtn'),
+                ajiReportPrompt: document.getElementById('ajiReportPrompt'),
+                ajiReportLoading: document.getElementById('ajiReportLoading'),
+                ajiReportActions: document.getElementById('ajiReportActions'),
+                ajiReportWarning: document.getElementById('ajiReportWarning'),
+                catCakeMarkModalMask: document.getElementById('catCakeMarkModalMask'),
+                catCakeMarkCloseBtn: document.getElementById('catCakeMarkCloseBtn'),
+                catCakeMarkPrompt: document.getElementById('catCakeMarkPrompt'),
+                pageLoadingOverlay: document.getElementById('pageLoadingOverlay')
             };
 
             let selectedSet = new Set();
             let selectedOrder = [];
             let selectedLocations = [null, null, null];
+            const ajiDailyState = new Map();
+
+            function getServerByUid(uid) {
+                if (uid.startsWith('1')) return '官服';
+                if (uid.startsWith('5')) return 'B服';
+                return '';
+            }
 
             function getSelectedCatsOrdered() {
                 return [...selectedOrder];
             }
 
-            function showToast(msg, type = 'info') {
+            window.showToast = function (msg, type = 'info') {
                 const container = document.getElementById('toastContainer');
                 if (type === 'error') {
                     container.querySelectorAll('.toast.error').forEach(node => node.remove());
@@ -1136,7 +299,7 @@
                 toast.textContent = msg;
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 3000);
-            }
+            };
 
             window.copyText = function (text) {
                 if (!text) return;
@@ -1217,19 +380,230 @@
                 return res.json();
             }
 
-            function openAdminModal() { dom.adminModalMask.classList.add('open'); }
-            function closeAdminModal() { dom.adminModalMask.classList.remove('open'); }
-            async function adminDelete(action) {
-                const password = dom.adminPasswordInput.value;
-                const uid = dom.adminUidInput.value.trim();
-                if (!password) return showToast('请输入密码', 'error');
-                if (action === 'delete_uid' && !/^\d{9}$/.test(uid)) return showToast('UID 必须是 9 位数字', 'error');
-                const payload = { action, password, ...(action === 'delete_uid' ? { uid } : {}) };
+
+            function getAnnouncementSignature(announcement) {
+                return [announcement?.id, announcement?.updated_at || announcement?.published_at || announcement?.created_at || ''].join(':');
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function escapeAttribute(value) {
+                return escapeHtml(value).replace(/`/g, '&#96;');
+            }
+
+            function getMarkReasonSummary(reasons) {
+                return Array.isArray(reasons) && reasons.length > 0 ? reasons.join('、') : '';
+            }
+
+            function renderMarkIndicator(reasons) {
+                const summary = getMarkReasonSummary(reasons);
+                if (!summary) return '';
+                const safeSummary = escapeAttribute(`该UID可能：${summary}`);
+                return `<button class="result-mark-indicator" type="button" title="${safeSummary}" aria-label="${safeSummary}" onclick="event.stopPropagation(); showToast('${safeSummary}', 'info')">!</button>`;
+            }
+
+            function normalizeAnnouncementMarkdown(content) {
+                let markdown = String(content || '')
+                    .replace(/\\r\\n/g, '\n')
+                    .replace(/\\n/g, '\n')
+                    .replace(/\r\n?/g, '\n')
+                    .trim();
+
+                const lineBreakCount = (markdown.match(/\n/g) || []).length;
+                if (lineBreakCount < 2) {
+                    markdown = markdown
+                        .replace(/\s+(#{1,6}\s+)/g, '\n\n$1')
+                        .replace(/\s+(---|\*\*\*|___)(?=\s|$)/g, '\n\n$1\n\n')
+                        .replace(/\s+(>\s+)/g, '\n\n$1')
+                        .replace(/\s+(-\s+\S)/g, '\n$1')
+                        .replace(/\s+(举报原因包括：|举报提交后|这可以|系统会|处理结果包括：|如果某|页面现在|官服与)/g, '\n\n$1')
+                        .replace(/(#{1,6}\s+[^\n]*?(?:功能|优化|数据自动清理|管理面板调整))\s+(?=\S)/g, '$1\n\n');
+                }
+
+                return markdown;
+            }
+
+            function renderAnnouncementMarkdown(content) {
+                const markdown = normalizeAnnouncementMarkdown(content);
+                if (!markdown) return '';
+
+                if (window.marked && window.DOMPurify) {
+                    marked.setOptions({
+                        gfm: true,
+                        breaks: true
+                    });
+                    const html = marked.parse(markdown);
+                    return DOMPurify.sanitize(html, {
+                        USE_PROFILES: { html: true },
+                        ADD_ATTR: ['target', 'rel']
+                    }).replace(/<a\s/gi, '<a target="_blank" rel="noopener noreferrer" ');
+                }
+
+                return escapeHtml(markdown).replace(/\n/g, '<br>');
+            }
+
+            function formatAnnouncementTime(value) {
+                if (!value) return '';
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return value;
+                return new Intl.DateTimeFormat('zh-CN', {
+                    timeZone: TIMEZONE,
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                }).format(date);
+            }
+
+            function closeAnnouncementModal() {
+                const signature = dom.announcementModalMask.dataset.signature;
+                if (dom.announcementSnoozeInput.checked && signature) {
+                    localStorage.setItem(LS_KEY_ANNOUNCEMENT_ACK, signature);
+                }
+                dom.announcementModalMask.classList.remove('open');
+                dom.announcementModalMask.setAttribute('aria-hidden', 'true');
+            }
+
+            function openAnnouncementModal(announcement) {
+                const signature = getAnnouncementSignature(announcement);
+                dom.announcementModalMask.dataset.signature = signature;
+                dom.announcementTitle.textContent = announcement.title || '公告';
+                const timeText = formatAnnouncementTime(announcement.published_at || announcement.created_at);
+                dom.announcementTime.textContent = timeText ? `发布时间：${timeText}` : '';
+                dom.announcementTime.dateTime = announcement.published_at || announcement.created_at || '';
+                dom.announcementContent.innerHTML = renderAnnouncementMarkdown(announcement.content || '');
+                dom.announcementSnoozeInput.checked = false;
+                dom.announcementModalMask.classList.add('open');
+                dom.announcementModalMask.setAttribute('aria-hidden', 'false');
+            }
+
+            async function fetchAnnouncement() {
                 try {
-                    const data = await apiPost('/admin-delete', payload);
-                    showToast(`删除成功，影响行数: ${data.deleted ?? '未知'}`, 'success');
+                    const announcement = await apiGet('/announcement');
+                    if (!announcement || !announcement.id) return;
+                    const signature = getAnnouncementSignature(announcement);
+                    if (localStorage.getItem(LS_KEY_ANNOUNCEMENT_ACK) === signature) return;
+                    openAnnouncementModal(announcement);
                 } catch (err) {
-                    showToast(`删除失败: ${err.message}`, 'error');
+                    console.warn('公告加载失败', err);
+                }
+            }
+
+            async function openAjiReportModal(server) {
+                const uid = ajiDailyState.get(server);
+                if (!uid) {
+                    showToast(`${server}当前没有可举报的阿基喵利 UID`, 'info');
+                    return;
+                }
+                dom.ajiReportModalMask.dataset.server = server;
+                dom.ajiReportModalMask.dataset.uid = uid;
+                showAjiReportLoading();
+                dom.ajiReportModalMask.classList.add('open');
+                dom.ajiReportModalMask.setAttribute('aria-hidden', 'false');
+
+                try {
+                    const state = await apiGet(`/aji-report?server=${encodeURIComponent(server)}&uid=${encodeURIComponent(uid)}`);
+                    if (state.valid_after_report) {
+                        showAjiReportValidMessage(state.message || '该UID已在被举报后由管理员判定为有效,请勿虚假举报');
+                        return;
+                    }
+                    showAjiReportChoices(`举报${uid}的原因`);
+                } catch (err) {
+                    showToast(err.message || '举报状态检查失败', 'error');
+                    closeAjiReportModal();
+                }
+            }
+
+            function closeAjiReportModal() {
+                dom.ajiReportModalMask.classList.remove('open');
+                dom.ajiReportModalMask.setAttribute('aria-hidden', 'true');
+                delete dom.ajiReportModalMask.dataset.server;
+                delete dom.ajiReportModalMask.dataset.uid;
+                showAjiReportChoices('');
+            }
+
+            function showAjiReportLoading() {
+                dom.ajiReportLoading.hidden = false;
+                dom.ajiReportPrompt.hidden = true;
+                dom.ajiReportPrompt.textContent = '';
+                dom.ajiReportActions.hidden = true;
+                dom.ajiReportWarning.hidden = true;
+            }
+
+            function showAjiReportChoices(message) {
+                dom.ajiReportLoading.hidden = true;
+                dom.ajiReportPrompt.hidden = false;
+                dom.ajiReportPrompt.textContent = message;
+                dom.ajiReportActions.hidden = false;
+                dom.ajiReportWarning.hidden = false;
+            }
+
+            function showAjiReportValidMessage(message) {
+                dom.ajiReportLoading.hidden = true;
+                dom.ajiReportPrompt.hidden = false;
+                dom.ajiReportPrompt.textContent = message;
+                dom.ajiReportActions.hidden = true;
+                dom.ajiReportWarning.hidden = true;
+            }
+
+            async function submitAjiReport(reason) {
+                const server = dom.ajiReportModalMask.dataset.server;
+                const uid = dom.ajiReportModalMask.dataset.uid;
+                if (!server || !uid) return;
+                try {
+                    await apiPost('/aji-report', { server, uid, reason });
+                    showToast('举报已提交，该 UID 已隐藏，可重新上传', 'success');
+                    closeAjiReportModal();
+                    refreshAji();
+                } catch (err) {
+                    if (err.code === 'uid_valid_after_report') {
+                        showAjiReportValidMessage(err.message || '该UID已在被举报后由管理员判定为有效,请勿虚假举报');
+                        return;
+                    }
+                    showToast(err.message || '举报失败', 'error');
+                    closeAjiReportModal();
+                    refreshAji();
+                }
+            }
+
+
+            window.openCatCakeMarkModal = function (uid, server) {
+                dom.catCakeMarkModalMask.dataset.uid = uid;
+                dom.catCakeMarkModalMask.dataset.server = server;
+                dom.catCakeMarkPrompt.textContent = ``;
+                dom.catCakeMarkModalMask.classList.add('open');
+                dom.catCakeMarkModalMask.setAttribute('aria-hidden', 'false');
+            };
+
+            function closeCatCakeMarkModal() {
+                dom.catCakeMarkModalMask.classList.remove('open');
+                dom.catCakeMarkModalMask.setAttribute('aria-hidden', 'true');
+                delete dom.catCakeMarkModalMask.dataset.uid;
+                delete dom.catCakeMarkModalMask.dataset.server;
+            }
+
+            async function submitCatCakeMark(reason) {
+                const uid = dom.catCakeMarkModalMask.dataset.uid;
+                const server = dom.catCakeMarkModalMask.dataset.server;
+                if (!uid || !server) return;
+                try {
+                    await apiPost('/cat-cake-mark', { uid, server, reason });
+                    const label = CAT_CAKE_MARK_REASON_LABELS[reason] || '已标记';
+                    showToast(`已标记为：${label}`, 'success');
+                    closeCatCakeMarkModal();
+                    await performSearch();
+                } catch (err) {
+                    showToast(err.message || '标记失败', 'error');
+                    closeCatCakeMarkModal();
                 }
             }
 
@@ -1246,21 +620,25 @@
 
 
             async function refreshAji() {
-                for (const server of ['官服', 'B服']) {
+                const servers = ['官服', 'B服'];
+                await Promise.all(servers.map(async (server) => {
                     const container = document.getElementById(`ajiContent-${server}`);
-                    if (!container) continue;
+                    if (!container) return;
                     try {
                         const data = await apiGet(`/daily-aji?server=${encodeURIComponent(server)}`);
                         if (data.uid) {
+                            ajiDailyState.set(server, data.uid);
                             container.innerHTML = `<span class="aji-info" onclick="copyText('${data.uid}')">${data.uid}</span>`;
                         } else {
+                            ajiDailyState.set(server, null);
                             container.innerHTML = `<input type="text" class="form-input aji-input" placeholder="输入UID"><button class="btn btn-outline aji-btn" onclick="window.upAjiGlobal('${server}', this)">上传</button>`;
                         }
                     } catch (err) {
                         console.error(err);
+                        ajiDailyState.delete(server);
                         container.innerHTML = '<span style="color:red;font-size:11px;">加载失败</span>';
                     }
-                }
+                }));
             }
 
 
@@ -1271,10 +649,19 @@
                     showToast('UID必须为9位数字', 'error');
                     return;
                 }
+                const inferredServer = getServerByUid(uid);
+                if (!inferredServer) {
+                    showToast('UID首位必须为1或5', 'error');
+                    return;
+                }
+                if (inferredServer !== server && ajiDailyState.get(inferredServer)) {
+                    showToast(`${inferredServer}今日已有记录，不能从${server}栏上传`, 'error');
+                    return;
+                }
                 btn.disabled = true;
                 try {
-                    await apiPost('/daily-aji', { uid, server });
-                    showToast('上传成功', 'success');
+                    await apiPost('/daily-aji', { uid, server: inferredServer });
+                    showToast(inferredServer === server ? '上传成功' : `已自动上传到${inferredServer}栏`, 'success');
                     refreshAji();
                 } catch (err) {
                     if (err.code === '23505') {
@@ -1313,9 +700,14 @@
                     if (filtered.length === 0) {
                         dom.results.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">本周暂无「${cat}」拥有者</div>`;
                     } else {
+                        const hasCompleteLocation = (row) => Array.isArray(row.cat_locations) && row.cat_locations.length === 3;
+                        const sorted = showLocation
+                            ? [...filtered].sort((a, b) => Number(hasCompleteLocation(b)) - Number(hasCompleteLocation(a)))
+                            : filtered;
                         const uniqueMap = new Map();
-                        for (const row of filtered) {
-                            if (!uniqueMap.has(row.uid)) {
+                        for (const row of sorted) {
+                            const existing = uniqueMap.get(row.uid);
+                            if (!existing || (showLocation && hasCompleteLocation(row) && !hasCompleteLocation(existing))) {
                                 uniqueMap.set(row.uid, row);
                             }
                         }
@@ -1325,8 +717,9 @@
                             return `
                                     <div class="result-card">
                                         <div class="result-info">
-                                            <div class="result-uid" onclick="copyText('${r.uid}')">${r.uid}<span class="server-tag">[${r.server}]</span></div>
-                                            <div class="result-cats">${r.cat_cakes.map((c, idx) => `<span class="result-cat-tag ${c === cat ? 'highlight' : ''}">${c}${hasLocation ? ' · ' + r.cat_locations[idx] : ''}</span>`).join('')}</div>
+                                            <div class="result-uid" onclick="copyText('${r.uid}')">${escapeHtml(r.uid)}<span class="server-tag">[${escapeHtml(r.server)}]</span>${renderMarkIndicator(r.mark_reasons)}</div>
+                                            <div class="result-cats">${r.cat_cakes.map((c, idx) => `<span class="result-cat-tag ${c === cat ? 'highlight' : ''}">${escapeHtml(c)}${hasLocation ? ' · ' + escapeHtml(r.cat_locations[idx]) : ''}</span>`).join('')}</div>
+                                            <button class="result-mark-btn" type="button" onclick="event.stopPropagation(); openCatCakeMarkModal('${escapeAttribute(r.uid)}', '${escapeAttribute(r.server)}')">标记</button>
                                         </div>
                                     </div>
                                 `;
@@ -1343,10 +736,10 @@
 
             async function uploadCatCakes() {
                 const uid = dom.uidInp.value.trim();
-                const server = dom.upServer.value;
+                const server = getServerByUid(uid);
                 const cats = getSelectedCatsOrdered();
                 const locationSelectedCount = selectedLocations.filter(Boolean).length;
-                if (!/^\d{9}$/.test(uid) || cats.length !== 3) return;
+                if (!/^\d{9}$/.test(uid) || cats.length !== 3 || !server) return;
                 if (locationSelectedCount > 0 && locationSelectedCount < 3) {
                     showToast('已填写部分地点，请补全三个地点或清空全部地点。', 'error');
                     return;
@@ -1362,11 +755,10 @@
                     const catLocations = locationSelectedCount === 3 ? [...selectedLocations] : [];
                     await apiPost('/cat-cakes', {
                         uid,
-                        server,
                         cat_cakes: cats,
                         cat_locations: catLocations
                     });
-                    showToast('上传成功', 'success');
+                    showToast(`上传成功，已归为${server}`, 'success');
                     dom.uidInp.value = '';
                     selectedSet.clear();
                     selectedOrder = [];
@@ -1418,14 +810,25 @@
             function updateUploadState() {
                 const uid = dom.uidInp.value.trim();
                 const isValidUid = /^\d{9}$/.test(uid);
+                const inferredServer = isValidUid ? getServerByUid(uid) : '';
                 const catsOk = selectedSet.size === 3;
-                const serverOk = !!dom.upServer.value;
                 const locationSelectedCount = selectedLocations.filter(Boolean).length;
                 const locationOk = locationSelectedCount === 0 || locationSelectedCount === 3;
 
                 dom.selCount.textContent = selectedSet.size;
-                dom.uidHint.textContent = (uid.length > 0 && !isValidUid) ? 'UID格式错误' : '';
-                dom.uidHint.style.color = '#ff4d4f';
+                if (uid.length > 0 && !isValidUid) {
+                    dom.uidHint.textContent = 'UID格式错误';
+                    dom.uidHint.style.color = '#ff4d4f';
+                } else if (isValidUid && !inferredServer) {
+                    dom.uidHint.textContent = 'UID首位必须为1或5';
+                    dom.uidHint.style.color = '#ff4d4f';
+                } else if (inferredServer) {
+                    dom.uidHint.textContent = `将自动归为${inferredServer}`;
+                    dom.uidHint.style.color = 'var(--accent-dark)';
+                } else {
+                    dom.uidHint.textContent = '';
+                    dom.uidHint.style.color = '#ff4d4f';
+                }
 
                 if (locationSelectedCount > 0 && locationSelectedCount < 3 && dom.locationSection.classList.contains('collapsed')) {
                     dom.locationSection.classList.remove('collapsed');
@@ -1438,12 +841,12 @@
                     dom.collapseHint.textContent = '点击折叠';
                 }
 
-                if (!serverOk) {
-                    dom.submitBtn.disabled = true;
-                    dom.submitBtn.textContent = '请选择服务器';
-                } else if (!isValidUid) {
+                if (!isValidUid) {
                     dom.submitBtn.disabled = true;
                     dom.submitBtn.textContent = '请输入9位UID';
+                } else if (!inferredServer) {
+                    dom.submitBtn.disabled = true;
+                    dom.submitBtn.textContent = 'UID首位需为1或5';
                 } else if (!catsOk) {
                     dom.submitBtn.disabled = true;
                     dom.submitBtn.textContent = `还需选择 ${3 - selectedSet.size} 个`;
@@ -1536,7 +939,7 @@
                 CAT_NAMES.forEach(name => {
                     const tag = document.createElement('div');
                     tag.className = 'tag-item';
-                    tag.innerHTML = `<img src="image/${name}.png" onerror="this.style.display='none'">${name}`;
+                    tag.innerHTML = `<img src="/image/${name}.png" alt="${name}猫猫糕图标" loading="lazy" onerror="this.style.display='none'">${name}`;
                     tag.onclick = () => {
                         if (selectedSet.has(name)) {
                             const removedIndex = selectedOrder.indexOf(name);
@@ -1580,9 +983,14 @@
                 }, 60000);
             }
 
-            function initWorker() {
-                refreshAji();
-                fetchWeeklyCount();
+            async function initWorker() {
+                await Promise.allSettled([
+                    refreshAji(),
+                    fetchWeeklyCount(),
+                    fetchAnnouncement()
+                ]);
+                document.body.classList.remove('page-loading');
+                dom.pageLoadingOverlay.hidden = true;
             }
 
             function bindEvents() {
@@ -1590,7 +998,6 @@
                     dom.uidInp.value = dom.uidInp.value.replace(/\D/g, '');
                     updateUploadState();
                 });
-                dom.upServer.addEventListener('change', updateUploadState);
                 dom.shBtn.addEventListener('click', performSearch);
                 dom.submitBtn.addEventListener('click', uploadCatCakes);
                 dom.searchTabBtn.addEventListener('click', () => {
@@ -1623,17 +1030,28 @@
                     dom.filterMenu.classList.remove('open');
                     dom.filterMenu.setAttribute('aria-hidden', 'true');
                 });
-                dom.adminGearBtn.addEventListener('click', openAdminModal);
-                dom.adminCloseBtn.addEventListener('click', closeAdminModal);
-                dom.adminModalMask.addEventListener('click', (event) => {
-                    if (event.target === dom.adminModalMask) closeAdminModal();
+                document.querySelectorAll('[data-aji-report-server]').forEach((button) => {
+                    button.addEventListener('click', () => openAjiReportModal(button.dataset.ajiReportServer));
                 });
-                dom.adminUidInput.addEventListener('input', () => {
-                    dom.adminUidInput.value = dom.adminUidInput.value.replace(/\D/g, '');
+                dom.ajiReportCloseBtn.addEventListener('click', closeAjiReportModal);
+                dom.ajiReportModalMask.addEventListener('click', (event) => {
+                    if (event.target === dom.ajiReportModalMask) closeAjiReportModal();
                 });
-                dom.adminDeleteUidBtn.addEventListener('click', () => adminDelete('delete_uid'));
-                dom.adminDeleteLastWeekBtn.addEventListener('click', () => adminDelete('delete_last_week'));
-                dom.adminDeleteAjiBtn.addEventListener('click', () => adminDelete('delete_aji'));
+                dom.ajiReportModalMask.querySelectorAll('[data-aji-report-reason]').forEach((button) => {
+                    button.addEventListener('click', () => submitAjiReport(button.dataset.ajiReportReason));
+                });
+                dom.catCakeMarkCloseBtn.addEventListener('click', closeCatCakeMarkModal);
+                dom.catCakeMarkModalMask.addEventListener('click', (event) => {
+                    if (event.target === dom.catCakeMarkModalMask) closeCatCakeMarkModal();
+                });
+                dom.catCakeMarkModalMask.querySelectorAll('[data-cat-cake-mark-reason]').forEach((button) => {
+                    button.addEventListener('click', () => submitCatCakeMark(button.dataset.catCakeMarkReason));
+                });
+                dom.announcementCloseBtn.addEventListener('click', closeAnnouncementModal);
+                dom.announcementConfirmBtn.addEventListener('click', closeAnnouncementModal);
+                dom.announcementModalMask.addEventListener('click', (event) => {
+                    if (event.target === dom.announcementModalMask) closeAnnouncementModal();
+                });
             }
 
             function main() {

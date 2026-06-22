@@ -1,73 +1,67 @@
-import { getShanghaiDayStart4amUtcIso } from './_time';
+import { getDb, getServerByUid, isValidServer, isValidUid } from './_db.js';
+import { cleanupOldAjiReports } from './_aji-reports.js';
+import { cleanupOldDailyAji } from './_cleanup.js';
 
 export async function onRequest(context) {
   try {
     const { request, env } = context;
-    const { SUPABASE_URL, SUPABASE_KEY } = env;
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
-      throw new Error('环境变量 SUPABASE_URL 或 SUPABASE_KEY 未设置');
-    }
-
+    const db = getDb(env);
+    const currentAjiDate = await cleanupOldDailyAji(db);
+    const reportCleanup = cleanupOldAjiReports(db).catch((err) => console.warn('阿基喵利举报清理失败', err));
+    context.waitUntil?.(reportCleanup);
     const url = new URL(request.url);
     const method = request.method;
 
     if (method === 'GET') {
       const server = url.searchParams.get('server');
-      if (!server) throw new Error('缺少 server 参数');
-
-      const startUTC = getShanghaiDayStart4amUtcIso();
-      const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/daily_aji?server=eq.${encodeURIComponent(server)}&created_at=gte.${startUTC}&order=created_at.desc&limit=1`,
-        {
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.message || '查询 daily_aji 失败');
+      if (!isValidServer(server)) {
+        return jsonResponse({ message: 'server 参数必须为 官服 或 B服' }, 400);
       }
 
-      const data = await response.json();
-      const uid = data?.[0]?.uid || null;
-      return new Response(JSON.stringify({ uid }), { headers: { 'Content-Type': 'application/json' } });
+      const ajiDate = currentAjiDate;
+      const row = await db
+        .prepare('SELECT uid FROM daily_aji WHERE server = ? AND aji_date = ? ORDER BY created_at DESC, id DESC LIMIT 1')
+        .bind(server, ajiDate)
+        .first();
+      return jsonResponse({ uid: row?.uid || null });
     }
 
     if (method === 'POST') {
-      const body = await request.json();
-      const { uid, server } = body;
-      if (!/^\d{9}$/.test(uid) || !server) throw new Error('参数无效');
-
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/daily_aji`, {
-        method: 'POST',
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation',
-        },
-        body: JSON.stringify({ uid, server }),
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        return new Response(JSON.stringify({ message: err.message, code: err.code }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        });
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return jsonResponse({ message: '请求体必须是合法 JSON' }, 400);
       }
 
-      return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
+      const { uid } = body || {};
+      const server = getServerByUid(uid);
+      if (!isValidUid(uid) || !server) {
+        return jsonResponse({ message: '参数无效' }, 400);
+      }
+
+      const ajiDate = currentAjiDate;
+      try {
+        await db
+          .prepare('INSERT INTO daily_aji (uid, server, aji_date, created_at) VALUES (?, ?, ?, ?)')
+          .bind(uid, server, ajiDate, new Date().toISOString())
+          .run();
+      } catch (err) {
+        return jsonResponse({ message: err?.message || '提交失败' }, 400);
+      }
+
+      return jsonResponse({ success: true });
     }
 
-    return new Response('Method Not Allowed', { status: 405 });
+    return jsonResponse({ message: 'Method Not Allowed' }, 405, { Allow: 'GET, POST' });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ message: err.message || '服务器内部错误' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return jsonResponse({ message: err.message || '服务器内部错误' }, 500);
   }
+}
+
+function jsonResponse(body, status = 200, extraHeaders = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...extraHeaders },
+  });
 }
