@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="theme-color" content="#f5f5f7">
+    <title>阿基喵利举报处理｜猫猫糕统计</title>
+    <link rel="icon" type="image/x-icon" href="/ico/favicon.ico">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .admin-report-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .admin-report-card { width: min(100%, 760px); }
+        .admin-report-title { margin: 0 0 8px; color: var(--text-main); font-size: 26px; line-height: 1.25; font-weight: 900; }
+        .admin-report-desc { margin: 0 0 18px; color: var(--text-sub); font-size: 13px; line-height: 1.7; font-weight: 700; }
+        .admin-report-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .admin-report-list { display: grid; gap: 12px; }
+        .admin-report-item { border: 1px solid var(--border); border-radius: 14px; padding: 14px; background: #fafafa; }
+        .admin-report-item-header { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-weight: 900; color: var(--text-main); margin-bottom: 8px; }
+        .admin-report-meta { color: #555; font-size: 13px; line-height: 1.7; }
+        .admin-report-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .admin-report-empty { padding: 22px; text-align: center; color: var(--text-sub); font-weight: 700; }
+    </style>
+</head>
+<body>
+    <main class="admin-report-wrapper">
+        <section class="card admin-report-card" aria-labelledby="adminReportTitle">
+            <h1 id="adminReportTitle" class="admin-report-title">阿基喵利举报处理</h1>
+            <p id="adminReportDesc" class="admin-report-desc">显示今日被举报的阿基喵利 UID。若判定举报为假，将恢复原 UID、替换其下架后其他人上传的 UID，并禁止今日再次举报该 UID。</p>
+            <div class="admin-report-toolbar">
+                <button id="refreshReportsBtn" class="btn btn-primary" type="button">刷新举报列表</button>
+                <button id="backAdminBtn" class="btn btn-outline" type="button">返回管理面板</button>
+            </div>
+            <div id="reportList" class="admin-report-list"></div>
+        </section>
+    </main>
+    <div id="toastContainer"></div>
+
+    <script>
+        (function () {
+            const API_BASE = '/api';
+            const ADMIN_PASSWORD_KEY = 'catCakeAdminPassword';
+            const dom = {
+                desc: document.getElementById('adminReportDesc'),
+                list: document.getElementById('reportList'),
+                refresh: document.getElementById('refreshReportsBtn'),
+                back: document.getElementById('backAdminBtn')
+            };
+
+            function showToast(msg, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                if (type === 'error') container.querySelectorAll('.toast.error').forEach(node => node.remove());
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = msg;
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+            function getPassword() { return sessionStorage.getItem(ADMIN_PASSWORD_KEY) || ''; }
+            async function apiPost(path, body) {
+                const res = await fetch(API_BASE + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw { message: err.message || '请求失败', status: res.status };
+                }
+                return res.json();
+            }
+            function requirePassword() {
+                if (getPassword()) return true;
+                showToast('请先登录管理面板', 'error');
+                window.location.href = '/admin';
+                return false;
+            }
+            function renderReports(reports) {
+                if (!reports.length) {
+                    dom.list.innerHTML = '<div class="admin-report-empty">今日暂无阿基喵利举报</div>';
+                    return;
+                }
+                dom.list.innerHTML = reports.map((report) => `
+                    <article class="admin-report-item">
+                        <div class="admin-report-item-header">
+                            <span>${escapeHtml(report.server)} · ${escapeHtml(report.uid)}</span>
+                            <span>${report.status === 'pending' ? '待处理' : report.status === 'rejected' ? '已判定为假' : '已判定属实'}</span>
+                        </div>
+                        <div class="admin-report-meta">原因：${escapeHtml(report.reason_text)}</div>
+                        <div class="admin-report-meta">举报日期：${escapeHtml(report.aji_date)}　提交时间：${escapeHtml(report.created_at || '-')}</div>
+                        ${report.replacement_uid ? `<div class="admin-report-meta">处理时替换 UID：${escapeHtml(report.replacement_uid)}</div>` : ''}
+                        ${report.status === 'pending' ? `
+                            <div class="admin-report-actions">
+                                <button class="btn btn-primary" type="button" data-report-resolution="accepted" data-report-id="${report.id}">举报属实</button>
+                                <button class="btn btn-outline" type="button" data-report-resolution="rejected" data-report-id="${report.id}">举报为假，恢复 UID</button>
+                            </div>` : ''}
+                    </article>
+                `).join('');
+            }
+            async function loadReports() {
+                if (!requirePassword()) return;
+                dom.refresh.disabled = true;
+                try {
+                    const data = await apiPost('/admin-report', { action: 'list', password: getPassword() });
+                    dom.desc.textContent = `显示 ${data.aji_date || '今日'} 被举报的阿基喵利 UID。若判定举报为假，将恢复原 UID、替换其下架后其他人上传的 UID，并禁止今日再次举报该 UID。`;
+                    renderReports(data.reports || []);
+                } catch (err) {
+                    showToast(`加载失败: ${err.message}`, 'error');
+                    if (err.status === 401) { sessionStorage.removeItem(ADMIN_PASSWORD_KEY); window.location.href = '/admin'; }
+                } finally {
+                    dom.refresh.disabled = false;
+                }
+            }
+            async function resolveReport(reportId, resolution) {
+                if (!requirePassword()) return;
+                try {
+                    const data = await apiPost('/admin-report', { action: 'resolve', password: getPassword(), report_id: Number(reportId), resolution });
+                    showToast(resolution === 'rejected' ? `已恢复 ${data.restored_uid}` : '已判定举报属实', 'success');
+                    loadReports();
+                } catch (err) {
+                    showToast(`处理失败: ${err.message}`, 'error');
+                }
+            }
+            dom.list.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-report-id]');
+                if (!button) return;
+                resolveReport(button.dataset.reportId, button.dataset.reportResolution);
+            });
+            dom.refresh.addEventListener('click', loadReports);
+            dom.back.addEventListener('click', () => { window.location.href = '/admin'; });
+            loadReports();
+        })();
+    </script>
+</body>
+</html>
