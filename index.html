@@ -149,6 +149,8 @@
                     <button class="btn btn-primary" id="submitBtn" disabled>请完善信息</button>
                 </section>
             </div>
+        </div>
+        <footer class="footer-meta"><div>仓库:<a href="https://github.com/aa1x/cat" target="_blank" rel="noopener noreferrer" class="feedback-link">AA1X/cat</a>&nbsp;&nbsp;许可证:<a href="https://opensource.org/license/MIT" target="_blank" rel="noopener noreferrer" class="feedback-link">MIT</a></div><div><a href="https://www.miyoushe.com/sr/accountCenter/postList?id=307745071" target="_blank" rel="noopener noreferrer" class="feedback-link">米游社</a>&nbsp;|&nbsp;<a href="https://qm.qq.com/q/iNStyDxgxW" target="_blank" rel="noopener noreferrer" class="feedback-link">QQ群</a>&nbsp;|&nbsp;<a href="mailto:AiX_89655@outlook.com" class="feedback-link">邮箱</a></div>
         </footer>
     </main>
     <div id="toastContainer"></div>
@@ -189,25 +191,11 @@
         </div>
     </div>
 
-    <div id="catCakeMarkModalMask" class="aji-report-modal-mask" role="dialog" aria-modal="true" aria-labelledby="catCakeMarkTitle" aria-hidden="true">
-        <div class="aji-report-modal">
-            <div class="aji-report-modal-header">
-                <span id="catCakeMarkTitle">标记搜索结果</span>
-                <button id="catCakeMarkCloseBtn" class="aji-report-close-btn" type="button" aria-label="关闭标记弹窗">×</button>
-            </div>
-            <p id="catCakeMarkPrompt" class="aji-report-prompt"></p>
-            <div id="catCakeMarkActions" class="aji-report-actions">
-                <button class="btn btn-primary" type="button" data-cat-cake-mark-reason="not_visitable">未开启可拜访</button>
-                <button class="btn btn-primary" type="button" data-cat-cake-mark-reason="wrong_location">地点信息错误</button>
-                <button class="btn btn-primary" type="button" data-cat-cake-mark-reason="wrong_cat_info">猫猫糕信息错误</button>
-            </div>>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
     <script>
         (function () {
+            // 所有 API 请求统一前缀（Cloudflare Pages 部署后就是当前域名）
             const API_BASE = '/api';
 
             const CAT_NAMES = ['垃圾糕', '冰糕', '星辰拿铁', '蜂蜜骰子', '芝麻酥', '游戏糕手', '红豆牛奶', '雪顶椰椰', '花见团子',
@@ -268,9 +256,6 @@
                 ajiReportLoading: document.getElementById('ajiReportLoading'),
                 ajiReportActions: document.getElementById('ajiReportActions'),
                 ajiReportWarning: document.getElementById('ajiReportWarning'),
-                catCakeMarkModalMask: document.getElementById('catCakeMarkModalMask'),
-                catCakeMarkCloseBtn: document.getElementById('catCakeMarkCloseBtn'),
-                catCakeMarkPrompt: document.getElementById('catCakeMarkPrompt'),
                 pageLoadingOverlay: document.getElementById('pageLoadingOverlay')
             };
 
@@ -405,7 +390,7 @@
             function renderMarkIndicator(reasons) {
                 const summary = getMarkReasonSummary(reasons);
                 if (!summary) return '';
-                const safeSummary = escapeAttribute(`该UID可能：${summary}`);
+                const safeSummary = escapeAttribute(`被标记为：${summary}`);
                 return `<button class="result-mark-indicator" type="button" title="${safeSummary}" aria-label="${safeSummary}" onclick="event.stopPropagation(); showToast('${safeSummary}', 'info')">!</button>`;
             }
 
@@ -576,34 +561,42 @@
             }
 
 
-            window.openCatCakeMarkModal = function (uid, server) {
-                dom.catCakeMarkModalMask.dataset.uid = uid;
-                dom.catCakeMarkModalMask.dataset.server = server;
-                dom.catCakeMarkPrompt.textContent = ``;
-                dom.catCakeMarkModalMask.classList.add('open');
-                dom.catCakeMarkModalMask.setAttribute('aria-hidden', 'false');
-            };
-
-            function closeCatCakeMarkModal() {
-                dom.catCakeMarkModalMask.classList.remove('open');
-                dom.catCakeMarkModalMask.setAttribute('aria-hidden', 'true');
-                delete dom.catCakeMarkModalMask.dataset.uid;
-                delete dom.catCakeMarkModalMask.dataset.server;
+            function closeCatCakeMarkMenus(exceptMenu = null) {
+                dom.results.querySelectorAll('.result-mark-menu.open').forEach((menu) => {
+                    if (menu === exceptMenu) return;
+                    menu.classList.remove('open');
+                    menu.setAttribute('aria-hidden', 'true');
+                });
+                dom.results.querySelectorAll('.result-mark-menu-btn[aria-expanded="true"]').forEach((button) => {
+                    const card = button.closest('.result-card');
+                    const menu = card?.querySelector('.result-mark-menu');
+                    if (menu === exceptMenu) return;
+                    button.setAttribute('aria-expanded', 'false');
+                });
             }
 
-            async function submitCatCakeMark(reason) {
-                const uid = dom.catCakeMarkModalMask.dataset.uid;
-                const server = dom.catCakeMarkModalMask.dataset.server;
+            function toggleCatCakeMarkMenu(button) {
+                const card = button.closest('.result-card');
+                const menu = card?.querySelector('.result-mark-menu');
+                if (!menu) return;
+                const willOpen = !menu.classList.contains('open');
+                closeCatCakeMarkMenus(menu);
+                menu.classList.toggle('open', willOpen);
+                menu.setAttribute('aria-hidden', willOpen ? 'false' : 'true');
+                button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            }
+
+            async function submitCatCakeMark(uid, server, reason) {
                 if (!uid || !server) return;
                 try {
                     await apiPost('/cat-cake-mark', { uid, server, reason });
                     const label = CAT_CAKE_MARK_REASON_LABELS[reason] || '已标记';
                     showToast(`已标记为：${label}`, 'success');
-                    closeCatCakeMarkModal();
+                    closeCatCakeMarkMenus();
                     await performSearch();
                 } catch (err) {
                     showToast(err.message || '标记失败', 'error');
-                    closeCatCakeMarkModal();
+                    closeCatCakeMarkMenus();
                 }
             }
 
@@ -717,9 +710,16 @@
                             return `
                                     <div class="result-card">
                                         <div class="result-info">
-                                            <div class="result-uid" onclick="copyText('${r.uid}')">${escapeHtml(r.uid)}<span class="server-tag">[${escapeHtml(r.server)}]</span>${renderMarkIndicator(r.mark_reasons)}</div>
+                                            <div class="result-uid" onclick="copyText('${escapeAttribute(r.uid)}')">${escapeHtml(r.uid)}<span class="server-tag">[${escapeHtml(r.server)}]</span>${renderMarkIndicator(r.mark_reasons)}</div>
                                             <div class="result-cats">${r.cat_cakes.map((c, idx) => `<span class="result-cat-tag ${c === cat ? 'highlight' : ''}">${escapeHtml(c)}${hasLocation ? ' · ' + escapeHtml(r.cat_locations[idx]) : ''}</span>`).join('')}</div>
-                                            <button class="result-mark-btn" type="button" onclick="event.stopPropagation(); openCatCakeMarkModal('${escapeAttribute(r.uid)}', '${escapeAttribute(r.server)}')">标记</button>
+                                        </div>
+                                        <button class="result-mark-menu-btn" type="button" aria-label="标记 ${escapeAttribute(r.uid)}" aria-expanded="false" data-uid="${escapeAttribute(r.uid)}" data-server="${escapeAttribute(r.server)}">
+                                            <span></span><span></span><span></span>
+                                        </button>
+                                        <div class="result-mark-menu" aria-hidden="true">
+                                            <button type="button" data-cat-cake-mark-action="not_visitable" data-uid="${escapeAttribute(r.uid)}" data-server="${escapeAttribute(r.server)}">未开启可拜访</button>
+                                            <button type="button" data-cat-cake-mark-action="wrong_location" data-uid="${escapeAttribute(r.uid)}" data-server="${escapeAttribute(r.server)}">地点信息错误</button>
+                                            <button type="button" data-cat-cake-mark-action="wrong_cat_info" data-uid="${escapeAttribute(r.uid)}" data-server="${escapeAttribute(r.server)}">猫猫糕信息错误</button>
                                         </div>
                                     </div>
                                 `;
@@ -1030,6 +1030,10 @@
                     dom.filterMenu.classList.remove('open');
                     dom.filterMenu.setAttribute('aria-hidden', 'true');
                 });
+                document.addEventListener('click', (event) => {
+                    if (dom.results.contains(event.target)) return;
+                    closeCatCakeMarkMenus();
+                });
                 document.querySelectorAll('[data-aji-report-server]').forEach((button) => {
                     button.addEventListener('click', () => openAjiReportModal(button.dataset.ajiReportServer));
                 });
@@ -1040,12 +1044,22 @@
                 dom.ajiReportModalMask.querySelectorAll('[data-aji-report-reason]').forEach((button) => {
                     button.addEventListener('click', () => submitAjiReport(button.dataset.ajiReportReason));
                 });
-                dom.catCakeMarkCloseBtn.addEventListener('click', closeCatCakeMarkModal);
-                dom.catCakeMarkModalMask.addEventListener('click', (event) => {
-                    if (event.target === dom.catCakeMarkModalMask) closeCatCakeMarkModal();
-                });
-                dom.catCakeMarkModalMask.querySelectorAll('[data-cat-cake-mark-reason]').forEach((button) => {
-                    button.addEventListener('click', () => submitCatCakeMark(button.dataset.catCakeMarkReason));
+                dom.results.addEventListener('click', (event) => {
+                    const menuButton = event.target.closest('.result-mark-menu-btn');
+                    if (menuButton) {
+                        event.stopPropagation();
+                        toggleCatCakeMarkMenu(menuButton);
+                        return;
+                    }
+                    const reasonButton = event.target.closest('[data-cat-cake-mark-action]');
+                    if (reasonButton) {
+                        event.stopPropagation();
+                        submitCatCakeMark(reasonButton.dataset.uid, reasonButton.dataset.server, reasonButton.dataset.catCakeMarkAction);
+                        return;
+                    }
+                    if (!event.target.closest('.result-mark-menu')) {
+                        closeCatCakeMarkMenus();
+                    }
                 });
                 dom.announcementCloseBtn.addEventListener('click', closeAnnouncementModal);
                 dom.announcementConfirmBtn.addEventListener('click', closeAnnouncementModal);
